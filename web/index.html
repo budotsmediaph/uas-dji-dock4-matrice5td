@@ -170,10 +170,10 @@
   @media (prefers-reduced-motion: reduce) { .recw.on .recw-dot, .vf-badge .d { animation: none; } }
 
   .pins { position: absolute; inset: 0; pointer-events: none; }
-  .pin { position: absolute; left: 0; top: 0; height: 22px; min-width: 22px; padding: 0 5px; box-sizing: border-box; margin: -11px 0 0 -11px;
-    border-radius: 11px; border: 1.5px solid var(--accent-fill); background: var(--glass); color: var(--ink);
+  .pin { position: absolute; left: 0; top: 0; height: 14px; min-width: 14px; padding: 0 3px; box-sizing: border-box; margin: -7px 0 0 -7px;
+    border-radius: 7px; border: 1px solid var(--accent-fill); background: var(--glass); color: var(--ink);
     font: 600 10px/19px var(--mono); text-align: center; pointer-events: auto; cursor: pointer; transition: opacity .2s; backdrop-filter: blur(6px); }
-  .pin.wide { margin-left: -15px; }
+  .pin.wide { margin-left: -10px; }
   .pin[aria-pressed="true"] { background: var(--accent-fill); color: var(--on-accent); z-index: 2; }
   .tag { position: absolute; left: 0; top: 0; pointer-events: none; background: var(--ink); color: var(--panel); font: 600 13px/1.25 var(--display);
     padding: 7px 10px; border-radius: 8px; white-space: nowrap; box-shadow: var(--shadow); z-index: 3; }
@@ -502,9 +502,11 @@
   .blocks span { line-height: 26px; }
   .times { line-height: 12px; }
   .live .osd { font-size: 8px; line-height: 12px; }
-  .pin, .tag, .tag b, .seg.small button, .vf-badge, .loading, .hsteps li::before, .vf-badge small {
+  .pin, .tag b, .seg.small button, .vf-badge, .loading, .hsteps li::before, .vf-badge small {
     font-family: var(--pixel); font-size: 16px; font-weight: 400; letter-spacing: .02em; -webkit-font-smoothing: none; }
-  .pin { line-height: 19px; }
+  .pin { font-size: 8px; line-height: 12px; }  /* pixel face at its native 8 px (owner, 16 Oct 2026) */
+  .tag { font: 500 12px/1.3 var(--mono); }  /* caption: terminal face; pixel face only for the 8 px part number */
+  .tag b { font-size: 8px; line-height: 1; }
   .vf-badge small { font-size: 8px; }
   .ring text, .console svg text, svg.hbat text { font-family: var(--pixel); font-weight: 400; letter-spacing: .04em; }
   .ring .lbl, .ring .id, .ring .pct, .ring .cap, .console svg text { font-size: 8px; }
