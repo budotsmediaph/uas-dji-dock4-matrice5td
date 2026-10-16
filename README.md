@@ -22,6 +22,7 @@ Same pipeline as the Dock 3 rebuild in `../../dock3/20260922-claude-opus5.5/`: a
 ├── renders/01–10 *.png     Eevee stills (closed, landing, rear X-ray steps, side cut, cradle detail, plan, bay camera)
 ├── renders/make_video.py   encodes renders/swap_frames/ with step captions
 ├── renders/dock4_swap_xray_rear.mp4   rear X-ray of the whole swap, 34 s, 1280 × 720
+├── video/compilation/      61 s compilation (budotsmedia.com/uas/#video): case-study recorder, text cards, ffmpeg build
 ├── site/                   (generated) budotsmedia.com/uas/dji-dock4-matrice5td/: page, dock4.glb, og.jpg, 404
 ├── wrangler.jsonc          Cloudflare Worker uas-dji-dock4-matrice5td, route budotsmedia.com/uas/dji-dock4-matrice5td*
 └── deploy.sh               rebuild site/ and deploy (live at once)
@@ -81,6 +82,10 @@ DJI publishes the order (launch film, KOSECO and Drone DR1 footage) and the 25 s
 ## Case study page
 
 `web/case-study.html` → https://budotsmedia.com/uas/dji-dock4-matrice5td/case-study/: one flight driven by scrolling, in the Dot Portal design system (night theme; DotGothic16 and Silkscreen, both OFL, in place of the 04 fonts, whose licence does not cover redistribution on a commercial site). Chapters: cover opens (clip frames 1020–1140), take-off (1140–1320, then a lift to 12 m), camera orbit, a simulated rotating LiDAR scan (analytic ray casts from the dome: 32 beams over −42° to +17°, 1024 steps per turn, six turns, about 113,000 returns from ground, fence, buildings, trees and a power line, coloured by height), RTK (waves from the O4 Ground Station, satellite links, the correction link), then descent (clip 0–90) and the cover closing (120–270). The 3D renders at half resolution with a 4 × 4 ordered dither and is enlarged without smoothing. Lift and yaw go on rig groups around the aircraft and batteries, because the animation mixer only rewrites a value when the clip time changes. Credits are at the bottom only. Share image `web/case-study-og.jpg` (LiDAR chapter, 1200 × 630).
+
+## Compilation video
+
+`video/compilation/` builds the 61 s, 1920 × 1080 compilation shown on https://budotsmedia.com/uas/#video: title, DJI's launch-film X-ray CG of the swap (credited; DJI's clip is not in the repo), our rear X-ray at 2× with three step captions, five chapters of the case study recorded frame by frame at 30 fps (`rec_case_study.mjs` replaces `requestAnimationFrame` and `performance.now` with a virtual clock, so the RTK waves and the easing play at real speed), the Dock 2/3/4 airborne-minutes card and an end card. Text is JetBrains Mono, rendered to PNG in headless Chrome (`make_cards.mjs`); `build_compilation.py` encodes each part and joins them with 0.4 s cross-fades. See `video/compilation/README.md`.
 
 ## Publishing
 
