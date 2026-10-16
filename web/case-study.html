@@ -1,0 +1,797 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>DJI Dock 4 case study — UAS — BUDOTS MEDIA</title>
+<meta name="description" content="One flight from DJI Dock 4, driven by scrolling: the cover opens, the Matrice 5TD climbs out, its rotating LiDAR scans the site, RTK corrections fix its position, and it lands for the battery swap.">
+<link rel="canonical" href="https://budotsmedia.com/uas/dji-dock4-matrice5td/case-study/">
+<meta property="og:title" content="DJI Dock 4 case study: cover, take-off, LiDAR, RTK, landing">
+<meta property="og:description" content="One flight from DJI Dock 4 in a scroll-driven 3D page: rotating LiDAR scan and RTK corrections, simulated in pixel art.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://budotsmedia.com/uas/dji-dock4-matrice5td/case-study/">
+<meta property="og:image" content="https://budotsmedia.com/uas/dji-dock4-matrice5td/case-study/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/favicon.ico">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-2QYQ7Y2JRK"></script>
+<script>window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', 'G-2QYQ7Y2JRK');</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Silkscreen:wght@400;700&display=swap">
+<style>
+  /* Dot Portal design system, "night" theme: whole pixels, no rounding, bevels, one hard drop, stepped motion.
+     Pixel faces: DotGothic16 (OFL) for copy; Silkscreen (OFL) for Latin labels, in place of the 04 fonts,
+     whose licence does not cover redistribution on a commercial site. */
+  :root {
+    color-scheme: dark;
+    --surface: #000033; --surface-tint: #000066; --surface-band: #333399; --chrome: #333366;
+    --bevel-hi: #6666cc; --bevel-lo: #000000; --line: #9999ff;
+    --ink: #ffffff; --ink-muted: #cccccc; --link: #66ccff; --link-visited: #ff99ff;
+    --title-bar: #9999ff; --on-title: #000033; --hot: #ff66cc; --on-hot: #000033;
+    --accent: #ffff00; --on-accent: #000033; --ok: #66ff66; --on-ok: #000033;
+    --bevel-out: inset -2px -2px 0 #000000, inset 2px 2px 0 #6666cc;
+    --bevel-in: inset 2px 2px 0 #000000, inset -2px -2px 0 #6666cc;
+    --drop: 4px 4px 0 #9999ff;
+    --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px; --space-6: 24px; --space-8: 32px;
+    --font-dot: "DotGothic16", "MS Gothic", "Osaka-Mono", monospace;
+    --font-label: "Silkscreen", "DotGothic16", monospace;
+    --top: 64px;
+  }
+  html { background: var(--surface); scroll-behavior: auto; }
+  body { margin: 0; background: var(--surface); color: var(--ink); font: 400 16px/24px var(--font-dot);
+    -webkit-font-smoothing: none; -moz-osx-font-smoothing: unset; font-smooth: never; text-rendering: optimizeSpeed; }
+  a { color: var(--link); text-decoration: underline; text-underline-offset: 3px; }
+  a:visited { color: var(--link-visited); }
+  :focus-visible { outline: 2px dotted var(--ink); outline-offset: 2px; }
+  [hidden] { display: none !important; }
+
+  /* 3D stage: rendered at half resolution, dithered, enlarged without smoothing */
+  #gl { position: fixed; left: 0; top: 0; width: 100vw; height: 100vh; display: block; image-rendering: pixelated; z-index: 0; }
+  .fallback { position: fixed; inset: 0; z-index: 0; background: var(--surface) center / cover no-repeat; image-rendering: pixelated; }
+  .loading { position: fixed; left: 50%; bottom: 96px; transform: translateX(-50%); z-index: 3; padding: 8px 12px; background: var(--surface);
+    border: 1px solid var(--line); box-shadow: var(--drop); font: 400 16px/16px var(--font-label); white-space: nowrap; }
+
+  /* fixed chrome: top bar and marquee band */
+  .top { position: fixed; left: 0; right: 0; top: 0; z-index: 6; height: 40px; box-sizing: border-box; display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+    background: var(--surface); border-bottom: 1px solid var(--line); font: 400 16px/16px var(--font-label); }
+  .top a { color: var(--ink); text-decoration: none; }
+  .top a:hover { color: var(--accent); }
+  .top .home b { color: var(--hot); font-weight: 400; }
+  .top nav { display: flex; gap: 16px; }
+  .mq { position: fixed; left: 0; right: 0; top: 40px; height: 24px; z-index: 6; overflow: hidden; background: var(--accent); color: var(--on-accent); border-bottom: 1px solid var(--line); }
+  .mq-track { display: flex; width: max-content; font: 400 16px/24px var(--font-label); white-space: nowrap; animation: mq 48s linear infinite; }
+  .mq-track span { padding-right: 48px; }
+  @keyframes mq { to { transform: translateX(-50%); } }
+
+  /* chapter pips and telemetry */
+  .pips { position: fixed; left: max(16px, env(safe-area-inset-left, 0px)); top: 50%; transform: translateY(-50%); z-index: 4; display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+  .pips a { display: grid; grid-template-columns: 12px auto; gap: 8px; align-items: center; text-decoration: none; color: var(--ink-muted); font: 400 8px/8px var(--font-label); }
+  .pips a i { width: 12px; height: 12px; box-sizing: border-box; border: 1px solid var(--line); background: var(--surface); }
+  .pips a span { visibility: hidden; background: var(--surface); padding: 2px 4px; }
+  .pips a:hover span, .pips a:focus-visible span, .pips a[aria-current="step"] span { visibility: visible; }
+  .pips a[aria-current="step"] i { background: var(--hot); border-color: var(--hot); }
+  .pips a[aria-current="step"] { color: var(--ink); }
+  .tele { position: fixed; left: max(16px, env(safe-area-inset-left, 0px)); bottom: max(16px, env(safe-area-inset-bottom, 0px)); z-index: 4; width: 232px; }
+  .tele dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; padding: 8px 12px 12px; font: 400 16px/16px var(--font-dot); }
+  .tele dt { color: var(--ink-muted); font: 400 8px/16px var(--font-label); }
+  .tele dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .tele dd.ok { color: var(--ok); }
+  .tele dd.hot { color: var(--hot); }
+
+  /* Box (titled panel) — the unit every screen is built from */
+  .box { background: var(--surface); border: 1px solid var(--line); box-shadow: var(--drop); }
+  .box > .tb { display: flex; justify-content: space-between; gap: 8px; padding: 4px 8px; background: var(--title-bar); color: var(--on-title); font: 400 16px/16px var(--font-label); }
+  .box > .bd { padding: var(--space-4); }
+  .badge { display: inline-block; padding: 0 4px; background: var(--hot); color: var(--on-hot); font: 400 16px/16px var(--font-label); animation: blink 1s steps(1) infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* chapters */
+  main { position: relative; z-index: 2; }
+  .ch { position: relative; min-height: 190vh; box-sizing: border-box; padding: calc(var(--top) + 32px) max(16px, env(safe-area-inset-right, 0px)) 0 max(16px, env(safe-area-inset-left, 0px)); }
+  .ch.hero { min-height: 100vh; padding-bottom: 32px; }
+  .ch.tall { min-height: 260vh; }
+  .num { position: absolute; left: max(56px, 6vw); top: 22vh; margin: 0; font: 700 clamp(96px, 20vw, 288px)/1 var(--font-label); color: rgba(153, 153, 255, .13); pointer-events: none; user-select: none; will-change: transform; }
+  .ch article { position: sticky; top: calc(var(--top) + 32px); width: min(448px, 100%); margin-left: auto; margin-right: max(0px, calc((100vw - 1440px) / 2)); }
+  .ch.hero article { position: relative; top: auto; margin-top: max(16px, calc(100vh - var(--top) - 470px)); }
+  h1, h2 { margin: 0 0 var(--space-3); font-weight: 400; text-wrap: balance; }
+  h1 { font: 400 48px/56px var(--font-dot); }
+  h2 { font: 400 32px/40px var(--font-dot); }
+  .bd p { margin: 0 0 var(--space-3); }
+  .bd p.muted { color: var(--ink-muted); }
+  .hint { font: 400 16px/16px var(--font-label); color: var(--accent); animation: blink 1.2s steps(1) infinite; margin: var(--space-4) 0 0 !important; }
+  table.dt { width: 100%; border-collapse: collapse; margin-top: var(--space-4); border: 1px solid var(--line); }
+  table.dt th, table.dt td { padding: 4px 8px; border-bottom: 1px solid var(--surface-band); text-align: left; vertical-align: top; }
+  table.dt th { width: 38%; background: var(--surface-tint); color: var(--ink-muted); font: 400 8px/16px var(--font-label); letter-spacing: 0; }
+  table.dt td { font: 400 16px/24px var(--font-dot); }
+  .counters { display: grid; gap: var(--space-3); margin-top: var(--space-4); }
+  .counter-row { display: flex; justify-content: space-between; align-items: center; gap: var(--space-3); }
+  .counter-row span { font: 400 16px/16px var(--font-label); }
+  .counter { display: inline-flex; gap: 2px; padding: 4px; background: var(--chrome); box-shadow: var(--bevel-in); }
+  .counter b { min-width: 20px; padding: 4px 2px; text-align: center; background: var(--on-title); color: var(--ok); font: 400 32px/32px var(--font-label); }
+  .counter.dim b { color: var(--ink-muted); }
+  .btns { display: flex; flex-wrap: wrap; gap: var(--space-3); margin-top: var(--space-6); }
+  .btn { display: inline-block; padding: 10px 14px; background: var(--chrome); box-shadow: var(--bevel-out); color: var(--ink) !important; text-decoration: none; font: 400 16px/16px var(--font-label); }
+  .btn.primary { background: var(--title-bar); color: var(--on-title) !important; box-shadow: inset -2px -2px 0 #333399, inset 2px 2px 0 #ccccff; }
+  .btn:active { box-shadow: var(--bevel-in); transform: translate(2px, 2px); }
+
+  /* end: credits sit only here, small */
+  .end { position: relative; z-index: 2; padding: 64px max(16px, env(safe-area-inset-right, 0px)) max(32px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+    background: linear-gradient(to bottom, rgba(0, 0, 51, 0), var(--surface) 96px); }
+  .credits { max-width: 720px; margin: 0 auto; padding-top: var(--space-4); border-top: 1px dotted var(--line); font: 400 16px/24px var(--font-dot); color: var(--ink-muted); }
+  .credits p { margin: 0 0 var(--space-2); }
+  .credits small { font-size: 16px; }
+  .credits .lbl { font: 400 8px/16px var(--font-label); color: var(--line); }
+
+  @media (max-width: 760px) {
+    .pips { display: none; }
+    .top nav a.hide-s { display: none; }
+    .tele { left: 8px; right: 8px; width: auto; bottom: max(8px, env(safe-area-inset-bottom, 0px)); }
+    .tele > .tb { display: none; }
+    .tele dl { grid-template-columns: repeat(4, auto 1fr); gap: 2px 6px; padding: 6px 8px; font-size: 16px; }
+    .tele dt { font-size: 8px; }
+    .tele .wide-only { display: none; }
+    .ch { min-height: 170vh; }
+    .ch.tall { min-height: 230vh; }
+    .ch article { position: relative; top: auto; margin-top: 62vh; }
+    .ch.hero article { margin-top: max(16px, calc(100vh - var(--top) - 520px)); }
+    h1 { font: 400 32px/40px var(--font-dot); }
+    .num { left: 16px; top: 14vh; }
+  }
+  @media (prefers-reduced-motion: reduce) { .mq-track, .badge, .hint { animation: none; } }
+</style>
+</head>
+<body>
+<canvas id="gl" aria-hidden="true"></canvas>
+<div class="fallback" id="fallback" hidden></div>
+<div class="loading" id="loading">LOADING MODEL…</div>
+
+<header class="top">
+  <a class="home" href="/uas/"><b>◆</b> UAS ▸ CASE STUDY</a>
+  <nav aria-label="Pages"><a href="/uas/dji-dock4-matrice5td/">3D VIEWER</a><a class="hide-s" href="/uas/">ALL UAS</a></nav>
+</header>
+<div class="mq" aria-hidden="true"><div class="mq-track"><span>★ DJI DOCK 4 + MATRICE 5TD ★ SCROLL ▼ COVER → TAKE-OFF → ORBIT → LIDAR → RTK → LANDING ★ SWAP UNDER 25 S ★ LANDING TO TAKE-OFF UNDER 45 S ★ −40 TO 50 °C ★</span><span>★ DJI DOCK 4 + MATRICE 5TD ★ SCROLL ▼ COVER → TAKE-OFF → ORBIT → LIDAR → RTK → LANDING ★ SWAP UNDER 25 S ★ LANDING TO TAKE-OFF UNDER 45 S ★ −40 TO 50 °C ★</span></div></div>
+
+<ol class="pips" aria-label="Chapters">
+  <li><a href="#c0" data-pip="0"><i></i><span>00 DOCK</span></a></li>
+  <li><a href="#c1" data-pip="1"><i></i><span>01 COVER</span></a></li>
+  <li><a href="#c2" data-pip="2"><i></i><span>02 TAKE-OFF</span></a></li>
+  <li><a href="#c3" data-pip="3"><i></i><span>03 SENSORS</span></a></li>
+  <li><a href="#c4" data-pip="4"><i></i><span>04 LIDAR</span></a></li>
+  <li><a href="#c5" data-pip="5"><i></i><span>05 RTK</span></a></li>
+  <li><a href="#c6" data-pip="6"><i></i><span>06 LANDING</span></a></li>
+</ol>
+
+<aside class="tele box" aria-label="Simulated telemetry">
+  <div class="tb"><span>TELEMETRY</span><span>※ SIM</span></div>
+  <dl>
+    <dt>PHASE</dt><dd id="tPhase">COVER CLOSED</dd>
+    <dt>ALT</dt><dd id="tAlt">0.0 m</dd>
+    <dt>BATT</dt><dd id="tBatt">95 %</dd>
+    <dt>RTK</dt><dd id="tRtk" class="ok">FIX</dd>
+    <dt class="wide-only">LIDAR</dt><dd class="wide-only" id="tPts">0 pts</dd>
+  </dl>
+</aside>
+
+<main>
+  <section class="ch hero" id="c0" data-ch="0">
+    <p class="num" aria-hidden="true">00</p>
+    <article class="box">
+      <div class="tb"><span>DOCK 4 ▸ CASE STUDY</span><span>00/06</span></div>
+      <div class="bd">
+        <h1>One flight from DJI Dock 4</h1>
+        <p>Scroll to run one sortie: the cover opens, the Matrice 5TD climbs out, its rotating LiDAR scans the site and RTK corrections fix its position. Then it lands, and the cover closes for the battery swap.</p>
+        <p class="muted">※ Unofficial 3D reconstruction. Dock, aircraft and animation follow DJI's published dimensions; the site, the LiDAR points and the telemetry are simulated.</p>
+        <p class="hint">▼ SCROLL</p>
+      </div>
+    </article>
+  </section>
+
+  <section class="ch" id="c1" data-ch="1">
+    <p class="num" aria-hidden="true">01</p>
+    <article class="box">
+      <div class="tb"><span>01 ▸ COVER</span><span>01/06</span></div>
+      <div class="bd">
+        <h2>Cover opens</h2>
+        <p>Both halves of the cover swing 90° out and down. Open, the dock is 1750 mm long; closed, it is a 639 × 640 mm block, 836 mm tall with the wind gauge and brackets.</p>
+        <table class="dt">
+          <tr><th>OPEN</th><td>1750 × 640 × 550 mm</td></tr>
+          <tr><th>CLOSED</th><td>639 × 640 × 836 mm</td></tr>
+          <tr><th>WEIGHT</th><td>66 kg, without batteries</td></tr>
+          <tr><th>RATING</th><td>IP56, −40 to 50 °C</td></tr>
+        </table>
+      </div>
+    </article>
+  </section>
+
+  <section class="ch" id="c2" data-ch="2">
+    <p class="num" aria-hidden="true">02</p>
+    <article class="box">
+      <div class="tb"><span>02 ▸ TAKE-OFF</span><span>02/06</span></div>
+      <div class="bd">
+        <h2>Take-off</h2>
+        <p>The propellers unfold and spin up, and the aircraft lifts out of the channel between the two humps of the pad. Landing to take-off takes under 45 s, because Dock 4 swaps the battery instead of recharging it.</p>
+        <table class="dt">
+          <tr><th>AIRCRAFT</th><td>Matrice 5TD</td></tr>
+          <tr><th>WEIGHT</th><td>2600 g, max 3050 g</td></tr>
+          <tr><th>FLIGHT</th><td>59 min max, 55 min hover</td></tr>
+          <tr><th>RADIUS</th><td>10 km</td></tr>
+          <tr><th>RATING</th><td>IP55, −40 to 50 °C</td></tr>
+        </table>
+      </div>
+    </article>
+  </section>
+
+  <section class="ch tall" id="c3" data-ch="3">
+    <p class="num" aria-hidden="true">03</p>
+    <article class="box">
+      <div class="tb"><span>03 ▸ SENSORS</span><span>03/06</span></div>
+      <div class="bd">
+        <h2>Sensors on the airframe</h2>
+        <p>Under the nose, the gimbal carries wide, 11× tele and thermal cameras and a laser rangefinder. On top, a rotating LiDAR sits under a clear dome. Around the body: omnidirectional vision, mmWave radar forward, up and down, and a downward 3D infrared sensor.</p>
+        <table class="dt">
+          <tr><th>THERMAL</th><td>1280 × 1024, UHR 2560 × 2048</td></tr>
+          <tr><th>RANGEFINDER</th><td>to 3 km</td></tr>
+          <tr><th>LIDAR</th><td>360° × 59°, 940 nm</td></tr>
+          <tr><th>RADAR</th><td>forward, up, down</td></tr>
+        </table>
+      </div>
+    </article>
+  </section>
+
+  <section class="ch tall" id="c4" data-ch="4">
+    <p class="num" aria-hidden="true">04</p>
+    <article class="box">
+      <div class="tb"><span>04 ▸ LIDAR <span class="badge">SIM</span></span><span>04/06</span></div>
+      <div class="bd">
+        <h2>Rotating LiDAR scan</h2>
+        <p>The LiDAR on top turns through 360° and covers 59° vertically. Dock 4 uses it for obstacle sensing, including thin wires at night, when the vision sensors have no light.</p>
+        <p class="muted">※ The points are a simulation: 32 beams from the dome, six turns, each return coloured by height. Ground, fence, buildings, trees and a power line appear as the beam passes them.</p>
+        <table class="dt">
+          <tr><th>FIELD</th><td>360° × 59°</td></tr>
+          <tr><th>WAVELENGTH</th><td>940 nm</td></tr>
+          <tr><th>USE</th><td>obstacle sensing</td></tr>
+          <tr><th>ON SCREEN</th><td id="ptsTotal">simulated points</td></tr>
+        </table>
+      </div>
+    </article>
+  </section>
+
+  <section class="ch tall" id="c5" data-ch="5">
+    <p class="num" aria-hidden="true">05</p>
+    <article class="box">
+      <div class="tb"><span>05 ▸ RTK</span><span>05/06</span></div>
+      <div class="bd">
+        <h2>RTK positioning</h2>
+        <p>The aircraft receives satellite signals and a stream of corrections from a base station fixed at a surveyed point. With both, its position resolves to centimetres instead of metres.</p>
+        <p>On Dock 4 the RTK base is not on the dock. It sits in the separate DJI O4 Ground Station, on its own pole at least 1.5 m from the dock and powered from it over PoE. The same unit carries the video link and 4G.</p>
+        <table class="dt">
+          <tr><th>GROUND STN</th><td>170 × 170 × 352 mm, 2.68 kg</td></tr>
+          <tr><th>DISTANCE</th><td>1.5 m or more from the dock</td></tr>
+          <tr><th>POWER</th><td>PoE from the dock</td></tr>
+          <tr><th>LINKS</th><td>RTK, video link, 4G</td></tr>
+        </table>
+      </div>
+    </article>
+  </section>
+
+  <section class="ch" id="c6" data-ch="6">
+    <p class="num" aria-hidden="true">06</p>
+    <article class="box">
+      <div class="tb"><span>06 ▸ LANDING</span><span>06/06</span></div>
+      <div class="bd">
+        <h2>Back in the dock</h2>
+        <p>The aircraft descends nose to the chevron and the cover closes over it. The 25-second swap follows: the used battery leaves the tail, rides the rotor into a compartment, and a charged one goes back in.</p>
+        <div class="counters" aria-label="Airborne minutes per hour with 20 minute flights, from our model">
+          <div class="counter-row"><span>DOCK 4</span><span class="counter" aria-label="58 minutes"><b>0</b><b>0</b><b>5</b><b>8</b></span></div>
+          <div class="counter-row"><span>DOCK 3</span><span class="counter dim" aria-label="35 minutes"><b>0</b><b>0</b><b>3</b><b>5</b></span></div>
+        </div>
+        <p class="muted" style="margin-top:12px">※ Minutes airborne per hour with 20 min flights: Dock 3 recharges its one battery in the aircraft, Dock 4 swaps it. Our model, from DJI's charge and flight times.</p>
+        <div class="btns">
+          <a class="btn primary" href="/uas/dji-dock4-matrice5td/#pull">WATCH THE SWAP ▸</a>
+          <a class="btn" href="/uas/dji-dock4-matrice5td/#generations">DOCK 2 / 3 / 4</a>
+        </div>
+      </div>
+    </article>
+  </section>
+</main>
+
+<footer class="end">
+  <div class="credits">
+    <p class="lbl">CREDITS ▸ METHOD</p>
+    <p><small>Model, simulation and page by <a href="https://bartsakwerda.com/">Bart Sakwerda</a> · <a href="/">Budots Media</a> · <a href="/aerialdata/">Aerial Data Ops</a>. The dock and aircraft come from a Blender build script, checked to ±1 mm against DJI's open and closed dimensions, and run here in three.js. Built with Claude Opus 5.5 (Anthropic), October 2026. Unofficial reconstruction, not affiliated with or endorsed by DJI.</small></p>
+    <p><small>Sources: <a href="https://enterprise.dji.com/dock-4/specs">DJI Dock 4 specs</a> · <a href="https://www.dji.com/media-center/announcements/dji-release-dock-4">DJI Dock 4 announcement</a> · DJI Dock 4 user and installation manuals · <a href="https://enterprise.dji.com/dock-3/specs">DJI Dock 3 specs</a> · source code <a href="https://github.com/budotsmediaph/uas-dji-dock4-matrice5td">github.com/budotsmediaph/uas-dji-dock4-matrice5td</a></small></p>
+  </div>
+</footer>
+
+<script type="importmap">
+{ "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/"
+} }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+
+const GLB_URL = '/uas/dji-dock4-matrice5td/dock4.glb';
+const $ = (s) => document.querySelector(s), $$ = (s) => Array.from(document.querySelectorAll(s));
+const clamp01 = (x) => Math.max(0, Math.min(1, x));
+const lerp = (a, b, k) => a + (b - a) * k;
+const ease = (x) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+const smooth = (x) => x * x * (3 - 2 * x);
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const PX = 2;                      // CSS pixels per rendered pixel
+const HOVER_AGL = 12;              // hover height above ground, m
+const UP = new THREE.Vector3(0, 1, 0);
+
+function fallback(msg) {
+  const f = $('#fallback'); f.style.backgroundImage = 'url(/uas/dji-dock4-matrice5td/og.jpg)'; f.hidden = false;
+  $('#gl').hidden = true; $('#loading').textContent = msg || '3D NOT AVAILABLE ▸ STILL IMAGE';
+}
+
+// ================================================================== renderer
+const canvas = $('#gl');
+let renderer;
+try { renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance' }); }
+catch (e) { fallback(); throw e; }
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.NeutralToneMapping;
+renderer.toneMappingExposure = 1.15;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.BasicShadowMap;   // hard-edged shadows suit the pixel grid
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color('#000033');
+scene.fog = new THREE.Fog('#000033', 60, 170);
+const camera = new THREE.PerspectiveCamera(34, 1, 0.05, 900);
+
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+composer.addPass(new OutputPass());
+const dither = new ShaderPass({
+  uniforms: { tDiffuse: { value: null }, uRes: { value: new THREE.Vector2(1, 1) }, uLevels: { value: 6 } },
+  vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+  fragmentShader: `uniform sampler2D tDiffuse; uniform vec2 uRes; uniform float uLevels; varying vec2 vUv;
+    const float B[16] = float[16](0.,8.,2.,10.,12.,4.,14.,6.,3.,11.,1.,9.,15.,7.,13.,5.);
+    void main(){
+      vec4 c = texture2D(tDiffuse, vUv);
+      ivec2 p = ivec2(mod(floor(vUv * uRes), 4.0));
+      float d = B[p.x + p.y * 4] / 16.0 - 0.47;
+      vec3 q = floor(c.rgb * (uLevels - 1.0) + 0.5 + d * 0.95) / (uLevels - 1.0);
+      gl_FragColor = vec4(clamp(q, 0.0, 1.0), 1.0);
+    }`,
+});
+composer.addPass(dither);
+
+function resize() {
+  const w = innerWidth, h = innerHeight;
+  renderer.setPixelRatio(1 / PX); renderer.setSize(w, h, true);
+  composer.setPixelRatio(1 / PX); composer.setSize(w, h);
+  dither.uniforms.uRes.value.set(Math.round(w / PX), Math.round(h / PX));
+  camera.aspect = w / h; camera.updateProjectionMatrix();
+  measure();
+}
+
+// ================================================================== night site
+scene.add(new THREE.HemisphereLight(0x6f6fd8, 0x05051a, 0.75));
+const moon = new THREE.DirectionalLight(0xd8d8ff, 1.6);
+moon.position.set(-7, 13, 6);
+moon.castShadow = true; moon.shadow.mapSize.set(1024, 1024);
+Object.assign(moon.shadow.camera, { left: -3, right: 3, top: 3, bottom: -3, near: 1, far: 40 });
+scene.add(moon);
+const padLight = new THREE.PointLight(0xfff0d0, 0, 3.5, 2);
+scene.add(padLight);
+
+let G = 0;                                   // ground height (dock bracket bottom)
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(600, 600), new THREE.MeshStandardMaterial({ color: 0x0b0b3a, roughness: 1 }));
+ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; scene.add(ground);
+const grid = new THREE.GridHelper(160, 80, 0x3d3da8, 0x1d1d6a);
+grid.material.transparent = true; grid.material.opacity = 0.7; scene.add(grid);
+
+// stars: one rendered pixel each, on a sphere far away
+{
+  const n = 1400, p = new Float32Array(n * 3), c = new Float32Array(n * 3);
+  for (let i = 0; i < n; i++) {
+    const u = Math.random(), v = Math.random() * 0.92 + 0.08, th = 2 * Math.PI * u, ph = Math.acos(v);
+    p.set([420 * Math.sin(ph) * Math.cos(th), 420 * Math.cos(ph), 420 * Math.sin(ph) * Math.sin(th)], i * 3);
+    const k = Math.random(); c.set(k > 0.85 ? [1, 1, 1] : [0.6, 0.6, 1], i * 3);
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(p, 3)); g.setAttribute('color', new THREE.BufferAttribute(c, 3));
+  scene.add(new THREE.Points(g, new THREE.PointsMaterial({ size: 1, sizeAttenuation: false, vertexColors: true, fog: false })));
+}
+
+// site primitives: used both for the dim silhouettes and for the simulated LiDAR returns
+const BOXES = [], CYLS = [], SPHERES = [], WIRES = [];
+function buildSite() {
+  const box = (x0, y0, z0, x1, y1, z1) => { const b = { min: [x0, G + y0, z0], max: [x1, G + y1, z1] }; BOXES.push(b); return b; };
+  // perimeter fence, 18 m square with a gate gap on +Z
+  const F = 9, T = 0.05, H = 2.0;
+  box(-F, 0, -F, F, H, -F + T); box(-F, 0, -F, -F + T, H, F); box(F - T, 0, -F, F, H, F); box(-F, 0, F - T, -2, H, F); box(2, 0, F - T, F, H, F);
+  box(-26, 0, -20, -12, 8, -6);      // workshop
+  box(14, 0, -27, 30, 11, -14);      // substation hall
+  box(-24, 0, 11, -14, 4, 22);       // low store
+  box(10, 0, 5.6, 16.1, 2.6, 8.0);   // container
+  box(-0.875, 0, -0.32, 0.875, 0.55, 0.32).noMesh = true;   // the dock, open: a target for the scan, drawn by the model itself
+  for (const [x, z, s] of [[14, 18, 1], [19, 13, 0.9], [-8, -15, 1.1], [-31, 2, 1], [6, -21, 0.8], [25, 23, 1.2], [-18, 29, 1], [-36, -22, 1.1], [32, 2, 0.9]]) {
+    CYLS.push({ x, z, r: 0.22 * s, y0: G, y1: G + 2.6 * s });
+    SPHERES.push({ c: [x, G + 3.9 * s, z], r: 2.1 * s });
+  }
+  CYLS.push({ x: 5, z: -4, r: 0.04, y0: G, y1: G + 2.2 });        // ground station pole
+  box(4.915, 2.2, -4.085, 5.085, 2.552, -3.915);                  // O4 Ground Station, 170 x 170 x 352 mm
+  // power line: two pylons, three wires sagging 2.5 m over 84 m
+  for (const z of [-42, 42]) {
+    CYLS.push({ x: 38, z, r: 0.45, y0: G, y1: G + 18 });
+    box(34.5, 16, z - 0.25, 41.5, 16.5, z + 0.25);
+  }
+  for (const x of [35, 38, 41]) {
+    const seg = 24; let prev = null;
+    for (let i = 0; i <= seg; i++) {
+      const z = -42 + (84 * i) / seg, y = G + 16 - 2.5 * (1 - ((z / 42) ** 2));
+      const p = [x, y, z];
+      if (prev) WIRES.push({ a: prev, b: p, r: 0.07 });
+      prev = p;
+    }
+  }
+}
+const siteMat = new THREE.MeshStandardMaterial({ color: 0x1b1b5c, roughness: 1, transparent: true, opacity: 1 });
+const edgeMat = new THREE.LineBasicMaterial({ color: 0x4747b8, transparent: true, opacity: 0.9 });
+const site = new THREE.Group(); scene.add(site);
+function buildSiteMeshes() {
+  const add = (geo, x, y, z) => {
+    const m = new THREE.Mesh(geo, siteMat); m.position.set(x, y, z); m.castShadow = m.receiveShadow = true; site.add(m);
+    const e = new THREE.LineSegments(new THREE.EdgesGeometry(geo, 30), edgeMat); e.position.copy(m.position); site.add(e);
+  };
+  for (const b of BOXES) {
+    if (b.noMesh) continue;
+    const s = [0, 1, 2].map((i) => b.max[i] - b.min[i]);
+    add(new THREE.BoxGeometry(...s), (b.min[0] + b.max[0]) / 2, (b.min[1] + b.max[1]) / 2, (b.min[2] + b.max[2]) / 2);
+  }
+  for (const c of CYLS) add(new THREE.CylinderGeometry(c.r, c.r, c.y1 - c.y0, 6), c.x, (c.y0 + c.y1) / 2, c.z);
+  for (const s of SPHERES) add(new THREE.IcosahedronGeometry(s.r, 0), ...s.c);
+  const wp = [];
+  for (const w of WIRES) wp.push(...w.a, ...w.b);
+  const wg = new THREE.BufferGeometry(); wg.setAttribute('position', new THREE.Float32BufferAttribute(wp, 3));
+  site.add(new THREE.LineSegments(wg, edgeMat));
+}
+
+// ================================================================== simulated rotating LiDAR
+// Analytic ray casts from the dome against the site primitives. 32 beams over 59 degrees (-42 to +17),
+// 1024 azimuth steps per turn, six turns with interleaved elevations; every return keeps its scan time.
+const NB = 32, NAZ = 1024, REV = 6, RANGE = 75;
+let lidar = null;
+function rayBox(o, d, b) {
+  let t0 = 0, t1 = RANGE;
+  for (let i = 0; i < 3; i++) {
+    if (Math.abs(d[i]) < 1e-9) { if (o[i] < b.min[i] || o[i] > b.max[i]) return Infinity; continue; }
+    let ta = (b.min[i] - o[i]) / d[i], tb = (b.max[i] - o[i]) / d[i];
+    if (ta > tb) [ta, tb] = [tb, ta];
+    t0 = Math.max(t0, ta); t1 = Math.min(t1, tb); if (t0 > t1) return Infinity;
+  }
+  return t0 > 1e-4 ? t0 : Infinity;
+}
+function raySphere(o, d, s) {
+  const ox = o[0] - s.c[0], oy = o[1] - s.c[1], oz = o[2] - s.c[2];
+  const b = ox * d[0] + oy * d[1] + oz * d[2], c = ox * ox + oy * oy + oz * oz - s.r * s.r, h = b * b - c;
+  if (h < 0) return Infinity; const t = -b - Math.sqrt(h); return t > 1e-4 ? t : Infinity;
+}
+function rayCyl(o, d, c) {
+  const ox = o[0] - c.x, oz = o[2] - c.z, a = d[0] * d[0] + d[2] * d[2];
+  if (a < 1e-9) return Infinity;
+  const b = ox * d[0] + oz * d[2], cc = ox * ox + oz * oz - c.r * c.r, h = b * b - a * cc;
+  if (h < 0) return Infinity; const t = (-b - Math.sqrt(h)) / a, y = o[1] + d[1] * t;
+  return t > 1e-4 && y >= c.y0 && y <= c.y1 ? t : Infinity;
+}
+function rayWire(o, d, w) {       // closest approach between the ray and the segment
+  const u = [w.b[0] - w.a[0], w.b[1] - w.a[1], w.b[2] - w.a[2]], r0 = [o[0] - w.a[0], o[1] - w.a[1], o[2] - w.a[2]];
+  const a = 1, b = d[0] * u[0] + d[1] * u[1] + d[2] * u[2], c = u[0] * u[0] + u[1] * u[1] + u[2] * u[2];
+  const dd = d[0] * r0[0] + d[1] * r0[1] + d[2] * r0[2], e = u[0] * r0[0] + u[1] * r0[1] + u[2] * r0[2], den = a * c - b * b;
+  if (den < 1e-9) return Infinity;
+  let s = (b * e - c * dd) / den, t = (a * e - b * dd) / den;
+  t = Math.max(0, Math.min(1, t)); s = (b * t - dd) / a;
+  if (s < 1e-4) return Infinity;
+  const px = o[0] + d[0] * s - (w.a[0] + u[0] * t), py = o[1] + d[1] * s - (w.a[1] + u[1] * t), pz = o[2] + d[2] * s - (w.a[2] + u[2] * t);
+  return px * px + py * py + pz * pz < w.r * w.r ? s : Infinity;
+}
+function scanSite(O) {
+  const pos = [], tt = [], hh = [];
+  const ends = new Float32Array(REV * NAZ * NB * 3);
+  let k = 0;
+  for (let r = 0; r < REV; r++) {
+    for (let ai = 0; ai < NAZ; ai++) {
+      const az = ((ai + r * 0.37) / NAZ) * Math.PI * 2;
+      for (let bi = 0; bi < NB; bi++) {
+        const el = (-42 + (59 * (bi + (r / REV))) / NB) * Math.PI / 180;
+        const d = [Math.cos(el) * Math.cos(az), Math.sin(el), Math.cos(el) * Math.sin(az)];
+        let t = d[1] < 0 ? (G - O[1]) / d[1] : Infinity;
+        for (const b of BOXES) t = Math.min(t, rayBox(O, d, b));
+        for (const c of CYLS) t = Math.min(t, rayCyl(O, d, c));
+        for (const s of SPHERES) t = Math.min(t, raySphere(O, d, s));
+        for (const w of WIRES) t = Math.min(t, rayWire(O, d, w));
+        const hit = t < RANGE, tr = hit ? t + (Math.random() - 0.5) * 0.04 : RANGE;
+        const x = O[0] + d[0] * tr, y = O[1] + d[1] * tr, z = O[2] + d[2] * tr;
+        ends[k++] = x; ends[k++] = y; ends[k++] = z;
+        if (hit) { pos.push(x, y, z); tt.push(r + ai / NAZ); hh.push(y - G); }
+      }
+    }
+  }
+  return { pos: new Float32Array(pos), t: new Float32Array(tt), h: new Float32Array(hh), ends, O };
+}
+const pointMat = new THREE.ShaderMaterial({
+  transparent: true, depthWrite: false,
+  uniforms: { uT: { value: 0 }, uFade: { value: 1 }, uSize: { value: 1 } },
+  vertexShader: `attribute float aT; attribute float aH; uniform float uT; uniform float uSize; varying vec3 vC;
+    vec3 lin(vec3 c) { return pow(c, vec3(2.2)); }
+    vec3 ramp(float h) {               // Dot Portal night palette: band, link blue, ok green, accent yellow, hot pink
+      vec3 c0 = vec3(0.2, 0.2, 0.6), c1 = vec3(0.4, 0.8, 1.0), c2 = vec3(0.4, 1.0, 0.4), c3 = vec3(1.0, 1.0, 0.0), c4 = vec3(1.0, 0.4, 0.8);
+      float x = clamp(h / 15.0, 0.0, 1.0) * 4.0;
+      vec3 c = x < 1.0 ? mix(c0, c1, x) : x < 2.0 ? mix(c1, c2, x - 1.0) : x < 3.0 ? mix(c2, c3, x - 2.0) : mix(c3, c4, x - 3.0);
+      return lin(c);
+    }
+    void main() {
+      if (aT > uT) { gl_Position = vec4(2.0, 2.0, 2.0, 1.0); gl_PointSize = 0.0; return; }
+      float fresh = 1.0 - clamp((uT - aT) * 10.0, 0.0, 1.0);
+      vC = mix(ramp(aH), vec3(1.0), fresh * 0.85);
+      gl_PointSize = uSize + fresh;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    }`,
+  fragmentShader: 'uniform float uFade; varying vec3 vC; void main(){ gl_FragColor = vec4(vC, uFade); }',
+});
+let cloud = null, fan = null, sortedT = null;
+function buildCloud(O) {
+  lidar = scanSite(O);
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(lidar.pos, 3));
+  g.setAttribute('aT', new THREE.BufferAttribute(lidar.t, 1));
+  g.setAttribute('aH', new THREE.BufferAttribute(lidar.h, 1));
+  cloud = new THREE.Points(g, pointMat); cloud.frustumCulled = false; scene.add(cloud);
+  sortedT = Float32Array.from(lidar.t).sort();
+  const fg = new THREE.BufferGeometry(); fg.setAttribute('position', new THREE.BufferAttribute(new Float32Array(NB * 6), 3));
+  fan = new THREE.LineSegments(fg, new THREE.LineBasicMaterial({ color: 0xff66cc, transparent: true, opacity: 0.85, fog: false }));
+  fan.frustumCulled = false; scene.add(fan);
+  $('#ptsTotal').textContent = `simulated, ${sortedT.length.toLocaleString('en-US')} points`;
+}
+function countBelow(t) { let lo = 0, hi = sortedT.length; while (lo < hi) { const m = (lo + hi) >> 1; if (sortedT[m] <= t) lo = m + 1; else hi = m; } return lo; }
+function updateFan(uT, show) {
+  fan.visible = show && uT > 0 && uT < REV;
+  if (!fan.visible) return;
+  const r = Math.min(REV - 1, Math.floor(uT)), ai = Math.min(NAZ - 1, Math.floor((uT - r) * NAZ));
+  const a = fan.geometry.attributes.position.array, base = ((r * NAZ + ai) * NB) * 3, O = lidar.O;
+  for (let bi = 0; bi < NB; bi++) {
+    a.set(O, bi * 6);
+    a[bi * 6 + 3] = lidar.ends[base + bi * 3]; a[bi * 6 + 4] = lidar.ends[base + bi * 3 + 1]; a[bi * 6 + 5] = lidar.ends[base + bi * 3 + 2];
+  }
+  fan.geometry.attributes.position.needsUpdate = true;
+}
+
+// ================================================================== RTK: base-station waves, satellites, correction link
+const rtk = new THREE.Group(); scene.add(rtk);
+const shellMat = (i) => new THREE.ShaderMaterial({
+  transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false,
+  uniforms: { uA: { value: 0 }, uC: { value: new THREE.Color(0xffff00) } },
+  vertexShader: 'varying vec3 vN; varying vec3 vV; void main(){ vec4 mv = modelViewMatrix * vec4(position, 1.0); vN = normalize(normalMatrix * normal); vV = normalize(-mv.xyz); gl_Position = projectionMatrix * mv; }',
+  fragmentShader: 'uniform float uA; uniform vec3 uC; varying vec3 vN; varying vec3 vV; void main(){ float rim = pow(1.0 - abs(dot(vN, vV)), 5.0); gl_FragColor = vec4(uC * rim * uA, 1.0); }',
+});
+const SHELLS = [], RIPPLES = [];
+const shellGeo = new THREE.IcosahedronGeometry(1, 4), ringGeo = new THREE.RingGeometry(0.96, 1, 64);
+for (let i = 0; i < 6; i++) {
+  const s = new THREE.Mesh(shellGeo, shellMat(i)); rtk.add(s); SHELLS.push(s);
+  const r = new THREE.Mesh(ringGeo, new THREE.MeshBasicMaterial({ color: 0xffff00, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, fog: false }));
+  r.rotation.x = -Math.PI / 2; rtk.add(r); RIPPLES.push(r);
+}
+const linkGeo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3()]);
+const link = new THREE.Line(linkGeo, new THREE.LineDashedMaterial({ color: 0xffff00, dashSize: 0.5, gapSize: 0.35, transparent: true, opacity: 0, fog: false }));
+rtk.add(link);
+const SATS = [];
+{
+  const satMat = new THREE.ShaderMaterial({
+    transparent: true, depthWrite: false, fog: false, uniforms: { uA: { value: 0 } },
+    vertexShader: 'void main(){ gl_PointSize = 7.0; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+    fragmentShader: 'uniform float uA; void main(){ vec2 p = floor(gl_PointCoord * 7.0); if (p.x != 3.0 && p.y != 3.0) discard; gl_FragColor = vec4(0.4, 0.8, 1.0, uA); }',
+  });
+  for (const [azd, eld] of [[30, 62], [110, 44], [200, 70], [255, 38], [330, 50]]) {
+    const az = azd * Math.PI / 180, el = eld * Math.PI / 180, R = 150;
+    const p = new THREE.Vector3(R * Math.cos(el) * Math.cos(az), R * Math.sin(el), R * Math.cos(el) * Math.sin(az));
+    const pg = new THREE.BufferGeometry().setFromPoints([p]);
+    const pt = new THREE.Points(pg, satMat); rtk.add(pt);
+    const lg = new THREE.BufferGeometry().setFromPoints([p, new THREE.Vector3()]);
+    const ln = new THREE.Line(lg, new THREE.LineDashedMaterial({ color: 0x66ccff, dashSize: 2, gapSize: 2.5, transparent: true, opacity: 0, fog: false }));
+    rtk.add(ln);
+    SATS.push({ p, ln });
+  }
+  SATS.mat = satMat;
+}
+const pulseGeo = new THREE.BufferGeometry(); pulseGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(5 * 3 * 3), 3));
+const pulses = new THREE.Points(pulseGeo, new THREE.PointsMaterial({ color: 0xffffff, size: 3, sizeAttenuation: false, transparent: true, opacity: 0, fog: false }));
+pulses.frustumCulled = false; rtk.add(pulses);
+const BASE = new THREE.Vector3(5, 2.56, -4);     // top of the O4 Ground Station (y set after load)
+
+// ================================================================== model
+let mixer, aircraft, props = [], batts = [], dockNode, lidarLocal = new THREE.Vector3(0.05, 0.2, 0), PAD_Y = 0.485;
+// The mixer writes a node only when its animated value changes, so lift and yaw never touch the animated nodes:
+// the aircraft and each battery sit in a rig group whose transform is set fresh every frame.
+const acRig = new THREE.Group(), battRigs = [];
+const loader = new GLTFLoader();
+loader.load(GLB_URL, (gltf) => {
+  const root = gltf.scene; scene.add(root);
+  root.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
+  aircraft = root.getObjectByName('M5TD'); dockNode = root.getObjectByName('Dock4');
+  props = ['FL', 'FR', 'RL', 'RR'].map((k) => root.getObjectByName(`M5TD_Prop_${k}`)).filter(Boolean);
+  batts = ['B1', 'B2', 'B3', 'B4'].map((k) => root.getObjectByName(`Batt_${k}`)).filter(Boolean);
+  root.add(acRig); acRig.add(aircraft);
+  for (const b of batts) { const g = new THREE.Group(); root.add(g); g.add(b); battRigs.push(g); }
+  for (const n of ['HS_', 'Dock_ChargeField']) root.traverse((o) => { if (o.name.startsWith(n)) o.visible = false; });
+  mixer = new THREE.AnimationMixer(root);
+  mixer.clipAction(gltf.animations[0]).play();
+  mixer.setTime(34); root.updateMatrixWorld(true);
+  G = new THREE.Box3().setFromObject(dockNode).min.y;
+  ground.position.y = G - 0.002; grid.position.y = G + 0.004;
+  BASE.y = G + 2.56;
+  const ld = root.getObjectByName('M5TD_LiDAR');
+  if (ld) { const c = new THREE.Box3().setFromObject(ld).getCenter(new THREE.Vector3()); lidarLocal.copy(c).sub(aircraft.position); }
+  buildSite(); buildSiteMeshes();
+  HOVER = G + HOVER_AGL;                                          // aircraft origin height while hovering
+  buildCloud([aircraft.position.x + lidarLocal.x, HOVER + lidarLocal.y, aircraft.position.z + lidarLocal.z]);
+  for (const r of RIPPLES) r.position.set(BASE.x, G + 0.02, BASE.z);
+  for (const s of SHELLS) s.position.copy(BASE);
+  $('#loading').hidden = true;
+  ready = true;
+}, (ev) => { if (ev.total) $('#loading').textContent = `LOADING MODEL ${Math.round((ev.loaded / ev.total) * 100)}%`; },
+(err) => { console.error(err); fallback('MODEL DID NOT LOAD ▸ STILL IMAGE'); });
+let HOVER = 12, ready = false;
+
+// ================================================================== scroll timeline
+let CH = [];
+function measure() {
+  const vh = innerHeight;
+  CH = $$('.ch[data-ch]').map((el) => {
+    const top = el.offsetTop, h = el.offsetHeight;
+    return { el, top, a: top - vh * 0.25, b: Math.max(top - vh * 0.25 + 1, top + h - vh * 0.9), num: el.querySelector('.num') };
+  });
+}
+let ys = scrollY, lastT = performance.now();
+const v1 = new THREE.Vector3(), v2 = new THREE.Vector3(), qYaw = new THREE.Quaternion(), qs = new THREE.Quaternion();
+const camP = new THREE.Vector3(2.3, 1.2, 2.5), camT = new THREE.Vector3(0, 0.45, 0), wantP = new THREE.Vector3(), wantT = new THREE.Vector3();
+const DEG20 = (20 * Math.PI) / 180;
+
+function shotAt(u, A, now) {
+  // camera pose for the current chapter; each chapter starts where the previous one ends
+  const D0 = new THREE.Vector3(2.3 + 0.12 * Math.sin(now * 0.00025), 1.15, 2.5), T0 = new THREE.Vector3(0, 0.42, 0);
+  const D1 = new THREE.Vector3(1.45, 2.15, 1.75), T1 = new THREE.Vector3(0, 0.5, 0);
+  const O2 = new THREE.Vector3(4.2, 1.6, 5.2);       // above and behind: the site stays in view below
+  const th0 = Math.atan2(O2.z, O2.x), r0 = Math.hypot(O2.x, O2.z);
+  const spiral = (k) => {
+    const th = th0 + 2.25 * Math.PI * ease(k);
+    const r = k < 0.5 ? lerp(r0, 1.35, smooth(k / 0.5)) : lerp(1.35, 3.4, smooth((k - 0.5) / 0.5));
+    const h = lerp(O2.y, 0.9, smooth(k)) - 0.55 * Math.sin(Math.PI * 2 * k);
+    return { p: A.clone().add(new THREE.Vector3(r * Math.cos(th), h, r * Math.sin(th))), t: A.clone() };
+  };
+  const wide = (k) => {
+    const s3 = spiral(1), th = th0 + 2.25 * Math.PI + 0.7 * ease(k), r = lerp(3.4, 31, ease(k)), h = lerp(0.8, 15, ease(k));
+    const p = A.clone().add(new THREE.Vector3(r * Math.cos(th), h, r * Math.sin(th)));
+    return { p: k === 0 ? s3.p : p, t: A.clone().lerp(new THREE.Vector3(0, G + 3, 0), ease(k)) };
+  };
+  const P5 = new THREE.Vector3(-19, G + 5.5, 23), T5 = new THREE.Vector3(2.5, G + 7, -3);
+  const P6 = new THREE.Vector3(2.5, G + 1.55, 2.8), T6 = new THREE.Vector3(0, G + 0.5, 0);
+  let last = 0; for (let i = 1; i < u.length; i++) if (u[i] > 0) last = i;
+  const k = u[last];
+  switch (last) {
+    case 0: return { p: D0, t: T0 };
+    case 1: return { p: D0.lerp(D1, ease(k)), t: T0.lerp(T1, ease(k)) };
+    case 2: { const e = ease(k); return { p: D1.lerp(A.clone().add(O2), e), t: T1.lerp(A, e) }; }
+    case 3: return spiral(k);
+    case 4: return wide(k);
+    case 5: { const w = wide(1), e = ease(k); return { p: w.p.lerp(P5, e), t: w.t.lerp(T5, e) }; }
+    default: { const e = ease(k), tgt = A.clone().lerp(T6, smooth(clamp01((k - 0.4) / 0.6))); return { p: P5.clone().lerp(P6, e), t: T5.clone().lerp(tgt, ease(clamp01(k * 1.6))) }; }
+  }
+}
+
+function frame(now) {
+  requestAnimationFrame(frame);
+  const dt = Math.min(0.1, (now - lastT) / 1000); lastT = now;
+  ys = reduced ? scrollY : lerp(ys, scrollY, 1 - Math.exp(-dt * 7));
+  const u = CH.map((c) => clamp01((ys - c.a) / (c.b - c.a)));
+  // parallax: chapter numerals drift at half speed
+  for (const c of CH) if (c.num) c.num.style.transform = `translate3d(0, ${Math.round((ys - c.top) * 0.5)}px, 0)`;
+  let cur = 0; for (let i = 1; i < u.length; i++) if (u[i] > 0.02) cur = i;
+  $$('[data-pip]').forEach((a) => { if (+a.dataset.pip === cur) a.setAttribute('aria-current', 'step'); else a.removeAttribute('aria-current'); });
+  if (!ready) { camera.position.copy(camP); camera.lookAt(camT); composer.render(dt); return; }
+
+  // ---------------------------------------------------------------- state from scroll
+  let clip = 34, lift = 0, yawX = 0, phase = 'COVER CLOSED', cover = 'CLOSED';
+  if (u[1] > 0) { clip = 34 + 4 * ease(u[1]); phase = u[1] < 1 ? 'COVER OPENING' : 'COVER OPEN'; }
+  if (u[2] > 0) {
+    const a = clamp01(u[2] / 0.45), b = clamp01((u[2] - 0.38) / 0.62);
+    clip = 38 + 6 * a; lift = (HOVER - 1.885) * ease(b);   // the clip ends 1.885 m up; the lift takes it to hover height
+    phase = a < 0.3 ? 'SPIN-UP' : b < 1 ? 'CLIMB' : 'HOVER';
+  }
+  if (u[3] > 0) phase = 'HOVER ▸ ORBIT';
+  if (u[4] > 0) phase = 'LIDAR SCAN';
+  if (u[5] > 0) { phase = 'RTK FIX'; yawX = DEG20 * ease(u[5]); }
+  if (u[6] > 0) {
+    const a = clamp01(u[6] / 0.45), b = clamp01((u[6] - 0.45) / 0.25), c = clamp01((u[6] - 0.72) / 0.28);
+    yawX = 0; lift = (HOVER - 1.585) * (1 - ease(a)); clip = c > 0 ? 4 + 5 * c : 3 * b;
+    phase = a < 1 ? 'DESCENT' : c <= 0 ? 'LANDING' : c < 1 ? 'COVER CLOSING' : 'SWAP NEXT';
+  }
+  cover = clip > 34 && clip < 38 ? 'OPENING' : clip >= 38 || clip < 4 ? 'OPEN' : clip < 9 ? 'CLOSING' : 'CLOSED';
+  mixer.setTime(clip);
+  const acp = v1.copy(aircraft.position);                       // clip pose, rig-local
+  qYaw.setFromAxisAngle(UP, yawX);
+  acRig.quaternion.copy(qYaw);
+  acRig.position.copy(acp).sub(v2.copy(acp).applyQuaternion(qYaw)); acRig.position.y += lift;   // turn about the aircraft, then lift
+  batts.forEach((b, i) => {
+    const g = battRigs[i];
+    if (b.position.distanceTo(acp) < 0.3) { g.position.copy(acRig.position); g.quaternion.copy(acRig.quaternion); }
+    else { g.position.set(0, 0, 0); g.quaternion.identity(); }
+  });
+  const airborne = lift > 0.01 || (clip > 39 && clip <= 44) || clip < 3.05;
+  if (airborne) props.forEach((p, i) => { qs.setFromAxisAngle(UP, dt * 28 * (i % 3 === 0 ? 1 : -1)); p.quaternion.multiply(qs); });
+  padLight.position.set(0, G + 1.3, 0);
+  padLight.intensity = cover === 'CLOSED' ? 0 : 1.8;
+
+  const A = v2.set(acp.x + 0.05, acp.y + lift + 0.08, acp.z);   // aircraft centre, world
+  // ---------------------------------------------------------------- LiDAR
+  const uT = u[4] * REV;
+  pointMat.uniforms.uT.value = u[6] > 0.5 ? -1 : uT;
+  pointMat.uniforms.uFade.value = u[5] > 0 ? lerp(1, 0.45, u[5]) : 1;
+  updateFan(uT, u[4] > 0 && u[4] < 1 && u[5] === 0);
+  siteMat.opacity = u[4] > 0 ? lerp(1, 0.12, smooth(clamp01(u[4] * 3))) : 1;
+  edgeMat.opacity = u[4] > 0 ? lerp(0.9, 0.18, smooth(clamp01(u[4] * 3))) : 0.9;
+  if (u[6] > 0.3) { siteMat.opacity = lerp(siteMat.opacity, 1, clamp01((u[6] - 0.3) / 0.4)); edgeMat.opacity = lerp(edgeMat.opacity, 0.9, clamp01((u[6] - 0.3) / 0.4)); }
+
+  // ---------------------------------------------------------------- RTK
+  const rI = u[5] > 0 ? smooth(clamp01(u[5] * 4)) * (u[6] > 0 ? 1 - clamp01(u[6] * 3) : 1) : 0;
+  rtk.visible = rI > 0.001;
+  if (rtk.visible) {
+    const tsec = reduced ? 0.4 : now / 1000;
+    SHELLS.forEach((s, i) => {
+      const ph = (tsec * 0.22 + i / SHELLS.length) % 1, r = 0.4 + ph * 17;
+      s.scale.setScalar(r); s.material.uniforms.uA.value = rI * Math.pow(1 - ph, 2.2) * 0.55;
+      const rp = RIPPLES[i]; rp.scale.setScalar(r); rp.material.opacity = rI * Math.pow(1 - ph, 2) * 0.7;
+    });
+    const lp = link.geometry.attributes.position;
+    lp.setXYZ(0, BASE.x, BASE.y, BASE.z); lp.setXYZ(1, A.x, A.y, A.z); lp.needsUpdate = true; link.computeLineDistances();
+    link.material.opacity = rI; link.material.dashOffset = -tsec * 2;
+    SATS.mat.uniforms.uA.value = rI;
+    const pa = pulses.geometry.attributes.position;
+    SATS.forEach((s, i) => {
+      const lpos = s.ln.geometry.attributes.position; lpos.setXYZ(1, A.x, A.y, A.z); lpos.needsUpdate = true; s.ln.computeLineDistances();
+      s.ln.material.opacity = rI * 0.55; s.ln.material.dashOffset = -tsec * 6;
+      for (let j = 0; j < 3; j++) { const f = (tsec * 0.35 + j / 3 + i * 0.13) % 1; pa.setXYZ(i * 3 + j, lerp(s.p.x, A.x, f), lerp(s.p.y, A.y, f), lerp(s.p.z, A.z, f)); }
+    });
+    pa.needsUpdate = true; pulses.material.opacity = rI;
+  }
+
+  // ---------------------------------------------------------------- camera
+  const shot = shotAt(u, A, now);
+  wantP.copy(shot.p); wantT.copy(shot.t);
+  if (wantP.y < G + 0.3) wantP.y = G + 0.3;
+  const k = reduced ? 1 : 1 - Math.exp(-dt * 6);
+  camP.lerp(wantP, k); camT.lerp(wantT, k);
+  camera.position.copy(camP); camera.lookAt(camT);
+
+  // ---------------------------------------------------------------- telemetry
+  const alt = Math.max(0, acp.y + lift - PAD_Y);
+  $('#tPhase').textContent = phase;
+  $('#tAlt').textContent = `${alt.toFixed(1)} m`;
+  const flown = clamp01(u[2]) * 0.15 + u[3] * 0.25 + u[4] * 0.3 + u[5] * 0.2 + clamp01(u[6] / 0.45) * 0.1;
+  $('#tBatt').textContent = `${Math.round(95 - 22 * flown)} %`;
+  const n = u[6] > 0.5 || uT <= 0 ? 0 : countBelow(uT);
+  $('#tPts').textContent = `${n.toLocaleString('en-US')} pts`;
+  $('#tRtk').classList.toggle('hot', u[5] > 0 && u[5] < 1 && Math.floor(now / 500) % 2 === 0 && !reduced);
+
+  composer.render(dt);
+}
+addEventListener('resize', resize);
+resize();
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

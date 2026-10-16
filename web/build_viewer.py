@@ -106,4 +106,8 @@ nf = ('<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport
       f'<p>Page not found. <a href="/uas/{SLUG}/">DJI Dock 4 + Matrice 5TD</a> · <a href="/uas/">UAS</a> · '
       '<a href="/">budotsmedia.com</a></p></html>\n')
 open(os.path.join(HERE, "..", "site", "404.html"), "w", encoding="utf-8").write(nf)
+case = os.path.join(out, "case-study")                       # scroll-driven case study, its own page
+os.makedirs(case, exist_ok=True)
+shutil.copyfile(os.path.join(HERE, "case-study.html"), os.path.join(case, "index.html"))
+shutil.copyfile(os.path.join(HERE, "case-study-og.jpg"), os.path.join(case, "og.jpg"))
 print(f"site {out}: index.html {os.path.getsize(os.path.join(out, 'index.html')) / 1e3:.0f} kB, dock4.glb, og.jpg")
