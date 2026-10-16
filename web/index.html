@@ -106,47 +106,66 @@
   .times b { color: var(--ink); font-weight: 600; }
   .speed { font: 600 11.5px/1 var(--mono); color: var(--ink); background: var(--panel-2); border: 1px solid var(--rule); border-radius: 8px; padding: 9px 10px; cursor: pointer; min-width: 44px; }
 
-  /* recorder: Rec button in the deck, settings panel above it */
-  .deck { grid-template-columns: auto minmax(0, 1fr) auto auto; }
-  .recbtn { display: inline-flex; align-items: center; gap: 7px; font: 600 11.5px/1 var(--mono); letter-spacing: .06em; text-transform: uppercase;
-    color: var(--ink); background: var(--panel-2); border: 1px solid var(--rule); border-radius: 8px; padding: 9px 10px; cursor: pointer; min-width: 44px; white-space: nowrap; }
-  .recbtn .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--rec); flex: none; }
-  .recbtn[aria-expanded="true"] { box-shadow: 0 0 0 1.5px var(--ink); }
-  .recbtn.on { background: var(--rec); border-color: var(--rec); color: var(--on-rec); }
-  .recbtn.on .dot { background: var(--on-rec); animation: recblink 1s steps(2, start) infinite; }
-  @keyframes recblink { to { opacity: .25; } }
-  .recpanel { position: absolute; right: 14px; bottom: 86px; width: min(318px, calc(100% - 28px)); box-sizing: border-box; padding: 14px; display: grid; gap: 11px; z-index: 6; }
-  .recpanel h3 { margin: 0; font: 700 15px/1.2 var(--display); letter-spacing: 0; text-transform: none; color: var(--ink); display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-  .recpanel h3 button { font: 600 16px/1 var(--display); color: var(--ink-2); background: none; border: 0; cursor: pointer; padding: 2px 4px; }
-  .recpanel p { margin: 0; font-size: 12.5px; line-height: 1.4; color: var(--ink-2); }
-  .recpanel .lbl { font: 600 10.5px/1.2 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 5px; }
-  .recpanel .opts { display: grid; gap: 3px; padding: 3px; background: var(--panel-2); border: 1px solid var(--rule); border-radius: 10px; }
-  .recpanel .opts.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .recpanel .opts button { font: 600 12px/1.15 var(--display); color: var(--ink-2); background: none; border: 0; border-radius: 7px; padding: 7px 4px; cursor: pointer; }
-  .recpanel .opts button small { display: block; font: 500 10.5px/1.3 var(--mono); color: var(--ink-3); margin-top: 2px; }
-  .recpanel .opts button[aria-pressed="true"] { background: var(--panel); color: var(--ink); box-shadow: 0 1px 2px rgba(0, 0, 0, .08), 0 0 0 1px var(--rule); }
-  .recpanel .opts button[aria-pressed="true"] small { color: var(--ink-2); }
-  .recpanel .opts button:disabled { opacity: .45; cursor: not-allowed; }
-  .recpanel label.chk { display: flex; gap: 8px; align-items: center; font-size: 13px; color: var(--ink); cursor: pointer; }
-  .recpanel label.chk input { accent-color: var(--accent-fill); width: 16px; height: 16px; margin: 0; }
-  .recpanel .go { font: 700 14px/1 var(--display); border: 0; border-radius: 10px; padding: 12px 14px; cursor: pointer; background: var(--rec); color: var(--on-rec);
-    display: flex; align-items: center; justify-content: center; gap: 9px; }
-  .recpanel .go .dot { width: 10px; height: 10px; border-radius: 50%; background: currentColor; }
-  .recpanel .go.stop .dot { border-radius: 2px; }
-  .recpanel .go.secondary { background: var(--panel-2); color: var(--ink); border: 1px solid var(--rule); }
-  .recpanel .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .recpanel .meter { display: grid; gap: 6px; }
-  .recpanel .meter .bar { height: 6px; border-radius: 3px; background: var(--band-idle); overflow: hidden; }
-  .recpanel .meter .bar i { display: block; height: 100%; width: 0; background: var(--rec); }
-  .recpanel .meter .num { font: 600 12px/1 var(--mono); display: flex; justify-content: space-between; color: var(--ink-2); }
-  .recpanel .meter .num b { color: var(--ink); }
-  .recpanel video { display: block; width: 100%; max-height: 230px; border-radius: 8px; background: #000; object-fit: contain; }
-  .recpanel .msg { font: 500 12px/1.4 var(--mono); color: var(--ink-2); }
-  .recpanel .msg.err { color: var(--hold); }
-  .stage.recording { box-shadow: inset 0 0 0 2px var(--rec); }
-  .stage.recording canvas { object-fit: contain; }
-  .stage.recording .pins { display: none; }
-  @media (prefers-reduced-motion: reduce) { .recbtn.on .dot { animation: none; } }
+  /* recorder: its own widget under the view controls (camera-style record button, options below);
+     while recording the stage becomes a viewfinder: the recorded output in its own frame, corner marks, REC badge */
+  .recw { width: 262px; box-sizing: border-box; overflow: hidden; pointer-events: auto; transition: background .2s, border-color .2s;
+    background: color-mix(in srgb, var(--rec) 9%, var(--glass)); border: 1.5px solid color-mix(in srgb, var(--rec) 55%, transparent); }
+  .recw-head:hover { background: color-mix(in srgb, var(--rec) 7%, transparent); }
+  .recw-head { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 11px; width: 100%; box-sizing: border-box;
+    padding: 10px 12px; border: 0; background: none; color: var(--ink); cursor: pointer; text-align: left; font: inherit; }
+  .recw-dot { width: 30px; height: 30px; border-radius: 50%; border: 2.5px solid var(--ink); display: grid; place-items: center; box-sizing: border-box; flex: none; }
+  .recw-dot::after { content: ""; width: 16px; height: 16px; border-radius: 50%; background: var(--rec); transition: transform .15s, border-radius .15s; }
+  .recw-head:hover .recw-dot::after { transform: scale(1.15); }
+  .recw-t { min-width: 0; }
+  .recw-t b { display: block; font: 700 15px/1.15 var(--display); }
+  .recw-t small { display: block; font: 500 10.5px/1.3 var(--mono); color: var(--ink-3); margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .recw-key { font: 600 10.5px/1 var(--mono); color: var(--ink-3); border: 1px solid var(--rule); border-radius: 5px; padding: 4px 6px; }
+  .recw.on { background: var(--rec); border-color: var(--rec); }
+  .recw.on .recw-head, .recw.on .recw-t small { color: var(--on-rec); }
+  .recw.on .recw-dot { border-color: var(--on-rec); animation: recpulse 1.2s ease-in-out infinite; }
+  .recw.on .recw-dot::after { background: var(--on-rec); border-radius: 3px; transform: scale(.75); }
+  .recw.on .recw-key { color: var(--on-rec); border-color: color-mix(in srgb, var(--on-rec) 45%, transparent); }
+  @keyframes recpulse { 50% { box-shadow: 0 0 0 5px color-mix(in srgb, var(--on-rec) 30%, transparent); } }
+  @keyframes recblink { to { opacity: .2; } }
+  .recw-body { padding: 12px; display: grid; gap: 11px; border-top: 1px solid color-mix(in srgb, var(--rule) 80%, transparent); background: var(--panel); }
+  .recw-body p { margin: 0; font-size: 12.5px; line-height: 1.4; color: var(--ink-2); }
+  .recw-body .lbl { font: 600 10.5px/1.2 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 5px; }
+  .recw-body .opts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 3px; padding: 3px; background: var(--panel-2); border: 1px solid var(--rule); border-radius: 10px; }
+  .recw-body .opts button { font: 600 12px/1.15 var(--display); color: var(--ink-2); background: none; border: 0; border-radius: 7px; padding: 7px 2px; cursor: pointer; }
+  .recw-body .opts button small { display: block; font: 500 10px/1.3 var(--mono); color: var(--ink-3); margin-top: 2px; white-space: nowrap; }
+  .recw-body .opts button[aria-pressed="true"] { background: var(--panel); color: var(--ink); box-shadow: 0 1px 2px rgba(0, 0, 0, .08), 0 0 0 1px var(--rule); }
+  .recw-body .opts button[aria-pressed="true"] small { color: var(--ink-2); }
+  .recw-body label.chk { display: flex; gap: 8px; align-items: center; font-size: 13px; color: var(--ink); cursor: pointer; }
+  .recw-body label.chk input { accent-color: var(--accent-fill); width: 16px; height: 16px; margin: 0; }
+  .recw-body .go { font: 700 14.5px/1 var(--display); border: 0; border-radius: 10px; padding: 13px 14px; cursor: pointer; background: var(--rec); color: var(--on-rec);
+    display: flex; align-items: center; justify-content: center; gap: 9px; width: 100%; }
+  .recw-body .go .d { width: 11px; height: 11px; border-radius: 50%; background: currentColor; }
+  .recw-body .go.stop .d { border-radius: 2px; }
+  .recw-body .go.secondary { background: var(--panel-2); color: var(--ink); border: 1px solid var(--rule); }
+  .recw-body .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .recw-body .meter { display: grid; gap: 6px; }
+  .recw-body .meter .bar { height: 6px; border-radius: 3px; background: var(--band-idle); overflow: hidden; }
+  .recw-body .meter .bar i { display: block; height: 100%; width: 0; background: var(--rec); }
+  .recw-body .meter .num { font: 600 12px/1 var(--mono); display: flex; justify-content: space-between; color: var(--ink-2); }
+  .recw-body .meter .num b { color: var(--ink); }
+  .recw-body video { display: block; width: 100%; max-height: 240px; border-radius: 8px; background: #000; object-fit: contain; }
+  .recw-body .msg { font: 500 12px/1.4 var(--mono); color: var(--ink-2); overflow-wrap: anywhere; }
+  .recw-body .msg.err { color: var(--hold); }
+  .stage.recording { box-shadow: inset 0 0 0 3px var(--rec); }
+  .stage.recording canvas#view { object-fit: contain; }
+  .stage.recording .pins, .stage.recording .step-card { visibility: hidden; }
+  .vfcanvas { position: absolute; pointer-events: none; }
+  .vf { position: absolute; pointer-events: none; box-shadow: 0 0 0 100vmax rgba(8, 10, 12, .42); }
+  .vf i { position: absolute; width: 34px; height: 34px; border: 0 solid #fff; filter: drop-shadow(0 0 2px rgba(0, 0, 0, .7)); }
+  .vf i:nth-of-type(1) { left: 12px; top: 12px; border-left-width: 3px; border-top-width: 3px; }
+  .vf i:nth-of-type(2) { right: 12px; top: 12px; border-right-width: 3px; border-top-width: 3px; }
+  .vf i:nth-of-type(3) { left: 12px; bottom: 12px; border-left-width: 3px; border-bottom-width: 3px; }
+  .vf i:nth-of-type(4) { right: 12px; bottom: 12px; border-right-width: 3px; border-bottom-width: 3px; }
+  .vf-badge { position: absolute; left: 50%; top: 16px; transform: translateX(-50%); display: flex; align-items: center; gap: 9px; padding: 7px 13px; border-radius: 999px;
+    background: #d4372c; color: #fff; font: 700 13px/1 var(--mono); letter-spacing: .1em; white-space: nowrap; box-shadow: 0 2px 12px rgba(0, 0, 0, .35); }
+  .vf-badge .d { width: 11px; height: 11px; border-radius: 50%; background: #fff; animation: recblink 1s steps(2, start) infinite; }
+  .vf-badge small { font: 500 11.5px/1 var(--mono); letter-spacing: 0; opacity: .9; }
+  @media (prefers-reduced-motion: reduce) { .recw.on .recw-dot, .vf-badge .d { animation: none; } }
 
   .pins { position: absolute; inset: 0; pointer-events: none; }
   .pin { position: absolute; left: 0; top: 0; height: 22px; min-width: 22px; padding: 0 5px; box-sizing: border-box; margin: -11px 0 0 -11px;
@@ -265,8 +284,9 @@
   }
   @media (max-width: 600px) {
     .speed { display: none; }
-    .deck { grid-template-columns: auto minmax(0, 1fr) auto; }
-    .recpanel { left: 10px; right: 10px; width: auto; top: 10px; bottom: auto; max-height: calc(100% - 20px); overflow-y: auto; }
+    .deck { grid-template-columns: auto minmax(0, 1fr); }
+    .recw { width: 100%; }
+    .recw-key { display: none; }
     .blocks span { font-size: 0; }
     .step-card { width: 100%; }
     .step-card h2 { font-size: 18px; }
@@ -502,6 +522,46 @@
           <input type="range" id="cutAxis" min="-140" max="320" step="1" value="30" aria-label="Section plane position in millimetres">
           <div class="row"><label for="cutAxis" id="cutName">From cabinet face</label><output id="cutOut" for="cutAxis">−30 mm</output></div>
         </div>
+        <div class="recw glass" id="recW" hidden>
+          <button type="button" class="recw-head" id="recBtn" aria-expanded="false" aria-controls="recBody">
+            <span class="recw-dot" aria-hidden="true"></span>
+            <span class="recw-t"><b id="recBtnText">Record video</b><small id="recBtnSub">MP4 · 1920 × 1080</small></span>
+            <span class="recw-key" aria-hidden="true">R</span>
+          </button>
+          <div class="recw-body" id="recBody" hidden>
+            <div id="recSetup">
+              <p style="margin-bottom:11px">Records the 3D view with your camera moves and mode changes. While it runs, the stage shows the recorded frame.</p>
+              <div class="lbl">Frame</div>
+              <div class="opts" role="group" aria-label="Frame size">
+                <button type="button" data-rf="wide" aria-pressed="true">16:9<small id="rfWide">1920 × 1080</small></button>
+                <button type="button" data-rf="tall" aria-pressed="false">9:16 Reels<small id="rfTall">1080 × 1920</small></button>
+                <button type="button" data-rf="window" aria-pressed="false">Window<small id="rfWin">—</small></button>
+              </div>
+              <div class="lbl" style="margin-top:11px">Length</div>
+              <div class="opts" role="group" aria-label="Recording length">
+                <button type="button" data-rl="clip" aria-pressed="true">Whole clip<small>44 s</small></button>
+                <button type="button" data-rl="swap" aria-pressed="false">Swap only<small id="rlSwap">27 s</small></button>
+                <button type="button" data-rl="free" aria-pressed="false">Free<small>until stop</small></button>
+              </div>
+              <label class="chk" style="margin-top:11px"><input type="checkbox" id="recCaps" checked> Step captions and credit in the video</label>
+              <p class="msg" id="recFmt" style="margin-top:8px"></p>
+              <button type="button" class="go" id="recStart" style="margin-top:11px"><span class="d" aria-hidden="true"></span>Start recording</button>
+            </div>
+            <div id="recLive" hidden>
+              <div class="meter"><div class="bar"><i id="recFill"></i></div><div class="num"><span>Recording <b id="recTime">0.0</b> s</span><span id="recOf"></span></div></div>
+              <button type="button" class="go stop" id="recStop" style="margin-top:11px"><span class="d" aria-hidden="true"></span>Stop</button>
+            </div>
+            <div id="recDone" hidden>
+              <video id="recPreview" controls playsinline loop muted></video>
+              <p class="msg" id="recInfo" style="margin-top:8px"></p>
+              <div class="row2" style="margin-top:10px">
+                <button type="button" class="go" id="recSave">Save video</button>
+                <button type="button" class="go secondary" id="recAgain">Record again</button>
+              </div>
+              <p class="msg" id="recSaveMsg" style="margin-top:8px" aria-live="polite"></p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
     <div class="deck glass">
@@ -516,41 +576,6 @@
         <div class="times"><span><b id="clock">0.0</b> s</span><span id="total">44.0 s</span></div>
       </div>
       <button type="button" class="speed" id="speed" aria-label="Playback speed">1×</button>
-      <button type="button" class="recbtn" id="recBtn" aria-expanded="false" aria-controls="recPanel" hidden><span class="dot" aria-hidden="true"></span><span id="recBtnText">Rec</span></button>
-    </div>
-    <div class="recpanel glass" id="recPanel" role="group" aria-labelledby="recHead" hidden>
-      <h3 id="recHead"><span>Record video</span><button type="button" id="recClose" aria-label="Close the recorder">×</button></h3>
-      <div id="recSetup">
-        <p style="margin-bottom:11px">Records the 3D view as you see it, including camera moves and mode changes. The window shows the recorded frame while it runs.</p>
-        <div class="lbl">Frame</div>
-        <div class="opts three" role="group" aria-label="Frame size">
-          <button type="button" data-rf="wide" aria-pressed="true">16:9<small id="rfWide">1920 × 1080</small></button>
-          <button type="button" data-rf="tall" aria-pressed="false">9:16 Reels<small id="rfTall">1080 × 1920</small></button>
-          <button type="button" data-rf="window" aria-pressed="false">Window<small id="rfWin">—</small></button>
-        </div>
-        <div class="lbl" style="margin-top:11px">Length</div>
-        <div class="opts three" role="group" aria-label="Recording length">
-          <button type="button" data-rl="clip" aria-pressed="true">Whole clip<small>44 s</small></button>
-          <button type="button" data-rl="swap" aria-pressed="false">Swap only<small id="rlSwap">27 s</small></button>
-          <button type="button" data-rl="free" aria-pressed="false">Free<small>until stopped</small></button>
-        </div>
-        <label class="chk" style="margin-top:11px"><input type="checkbox" id="recCaps" checked> Step captions and credit in the video</label>
-        <p class="msg" id="recFmt" style="margin-top:8px"></p>
-        <button type="button" class="go" id="recStart" style="margin-top:11px;width:100%"><span class="dot" aria-hidden="true"></span>Start recording</button>
-      </div>
-      <div id="recLive" hidden>
-        <div class="meter"><div class="bar"><i id="recFill"></i></div><div class="num"><span>Recording <b id="recTime">0.0</b> s</span><span id="recOf"></span></div></div>
-        <button type="button" class="go stop" id="recStop" style="margin-top:11px;width:100%"><span class="dot" aria-hidden="true"></span>Stop</button>
-      </div>
-      <div id="recDone" hidden>
-        <video id="recPreview" controls playsinline loop muted></video>
-        <p class="msg" id="recInfo" style="margin-top:8px"></p>
-        <div class="row2" style="margin-top:10px">
-          <button type="button" class="go" id="recSave">Save video</button>
-          <button type="button" class="go secondary" id="recAgain">New recording</button>
-        </div>
-        <p class="msg" id="recSaveMsg" style="margin-top:8px" aria-live="polite"></p>
-      </div>
     </div>
     <div class="loading" id="loading">Loading model</div>
   </section>
@@ -974,6 +999,7 @@ function resize() {
   camera.aspect = w / Math.max(h, 1);
   camera.zoom = rec && rec.h > rec.w ? 0.62 : 1;   // a vertical frame keeps the mechanism, not the whole open dock
   camera.updateProjectionMatrix();
+  if (rec) placeVF();
 }
 new ResizeObserver(resize).observe(stage);
 
@@ -1234,6 +1260,7 @@ function recSize(frame) {
   return [even(stage.clientWidth), even(stage.clientHeight)];
 }
 function recRefresh() {
+  $('#recBtnSub').textContent = `${recSize(recUI.frame).join(' × ')} · ${{ clip: 'whole clip', swap: 'swap only', free: 'free length' }[recUI.len]}`;
   $('#rfWide').textContent = `${BIG[0]} × ${BIG[1]}`; $('#rfTall').textContent = `${BIG[1]} × ${BIG[0]}`;
   $('#rfWin').textContent = recSize('window').join(' × ');
   $('#rlSwap').textContent = `${Math.round(SWAP_B - SWAP_A)} s`;
@@ -1243,8 +1270,15 @@ function recRefresh() {
   $('#recFmt').textContent = `${recType[2]} · 30 fps · ${recSize(recUI.frame).join(' × ')} px`;
 }
 function recPanelOpen(on) {
-  $('#recPanel').hidden = !on; $('#recBtn').setAttribute('aria-expanded', String(on));
+  $('#recBody').hidden = !on; $('#recBtn').setAttribute('aria-expanded', String(on));
   if (on && !rec && !$('#recSetup').hidden) recRefresh();
+}
+// viewfinder: the recorded output canvas, letterboxed like the WebGL canvas under it, with corner marks and a REC badge
+function placeVF() {
+  if (!rec || !rec.vf) return;
+  const sw = stage.clientWidth, sh = stage.clientHeight, a = rec.w / rec.h;
+  const w = sw / sh > a ? sh * a : sw, h = sw / sh > a ? sh : sw / a, x = (sw - w) / 2, y = (sh - h) / 2;
+  for (const el of [rec.out, rec.vf]) Object.assign(el.style, { left: `${x}px`, top: `${y}px`, width: `${w}px`, height: `${h}px` });
 }
 function recStart() {
   if (!mixer || rec) return;
@@ -1258,15 +1292,21 @@ function recStart() {
   mr.ondataavailable = (e) => { if (e.data && e.data.size) chunks.push(e.data); };
   mr.onstop = () => { stream.getTracks().forEach((tr) => tr.stop()); recFinish(chunks); };
   const len = recUI.len === 'clip' ? duration : recUI.len === 'swap' ? SWAP_B - SWAP_A : 0;
-  rec = { w, h, ctx, mr, len, played: 0, t0: performance.now(), caps: $('#recCaps').checked, speed0: speed, lastUI: 0, scope: recUI.len };
+  rec = { w, h, ctx, out, mr, len, played: 0, t0: performance.now(), caps: $('#recCaps').checked, speed0: speed, lastUI: 0, scope: recUI.len };
+  out.className = 'vfcanvas';
+  rec.vf = document.createElement('div'); rec.vf.className = 'vf';
+  rec.vf.innerHTML = `<i></i><i></i><i></i><i></i><span class="vf-badge"><span class="d"></span>REC <b id="vfTime">0:00</b><small>${w} × ${h}</small></span>`;
+  canvas.after(out, rec.vf);
   if (len) { speed = 1; $('#speed').textContent = speedLabel(1); setTime(recUI.len === 'swap' ? SWAP_A : 0); setPlaying(true); }
   stage.classList.add('recording');
-  resize();
+  resize(); placeVF();
   mr.start(1000);
   $('#recSetup').hidden = true; $('#recDone').hidden = true; $('#recLive').hidden = false;
   $('#recFill').parentElement.hidden = !len;
   $('#recOf').textContent = len ? `of ${len.toFixed(1)} s` : 'stop when done';
-  $('#recBtn').classList.add('on'); $('#recBtn').setAttribute('aria-label', 'Stop recording');
+  $('#recW').classList.add('on'); recPanelOpen(true);
+  $('#recBtnText').textContent = 'Recording 0:00'; $('#recBtnSub').textContent = 'press to stop · R';
+  $('#recBtn').setAttribute('aria-label', 'Stop recording');
 }
 function recStop() {
   if (!rec || rec.stopping) return;
@@ -1283,16 +1323,18 @@ function recFrame(dt) {
   if (now - rec.lastUI > 200) {
     rec.lastUI = now;
     const el = (now - rec.t0) / 1000;
-    $('#recTime').textContent = el.toFixed(1); $('#recBtnText').textContent = fmtClock(el);
+    $('#recTime').textContent = el.toFixed(1); $('#recBtnText').textContent = `Recording ${fmtClock(el)}`;
+    const vt = rec.vf.querySelector('#vfTime'); if (vt) vt.textContent = fmtClock(el);
     if (rec.len) $('#recFill').style.width = `${Math.min(100, (rec.played / rec.len) * 100)}%`;
   }
 }
 function recFinish(chunks) {
   const r = rec; rec = null;
   stage.classList.remove('recording');
+  r.out.remove(); r.vf.remove();
   resize();
   speed = r.speed0; $('#speed').textContent = speedLabel(speed);
-  $('#recBtn').classList.remove('on'); $('#recBtnText').textContent = 'Rec'; $('#recBtn').removeAttribute('aria-label');
+  $('#recW').classList.remove('on'); $('#recBtnText').textContent = 'Record video'; $('#recBtn').removeAttribute('aria-label');
   const blob = new Blob(chunks, { type: recType[0].split(';')[0] });
   if (recUI.url) URL.revokeObjectURL(recUI.url);
   recUI.blob = blob.size ? blob : null; recUI.url = blob.size ? URL.createObjectURL(blob) : null;
@@ -1304,7 +1346,7 @@ function recFinish(chunks) {
   $('#recSave').disabled = !blob.size; $('#recSave').textContent = `Save ${recType[1].toUpperCase()}`;
   $('#recSaveMsg').textContent = ''; $('#recSaveMsg').classList.remove('err');
   $('#recLive').hidden = true; $('#recSetup').hidden = true; $('#recDone').hidden = false;
-  recPanelOpen(true);
+  recPanelOpen(true); recRefresh();
 }
 const CAP_SANS = '"Archivo", "Helvetica Neue", Arial, sans-serif', CAP_MONO = '"JetBrains Mono", ui-monospace, Menlo, monospace';
 function capLines(g, text, maxW, max = 2) {
@@ -1350,10 +1392,16 @@ function drawCaptions(g, W, H) {
   cl.forEach((l, i) => g.fillText(l, x + 12 * s, cy + 2 * s + ch * (i + 0.5), cw - 24 * s));
   g.restore();
 }
-if (recType) $('#recBtn').hidden = false;
-$('#recBtn').addEventListener('click', () => { if (rec) recStop(); else recPanelOpen($('#recPanel').hidden); });
-$('#recClose').addEventListener('click', () => recPanelOpen(false));
-$('#recPanel').addEventListener('keydown', (e) => { if (e.key === 'Escape') { recPanelOpen(false); $('#recBtn').focus(); } });
+if (recType) { $('#recW').hidden = false; recRefresh(); }
+$('#recBtn').addEventListener('click', () => { if (rec) recStop(); else recPanelOpen($('#recBody').hidden); });
+$('#recW').addEventListener('keydown', (e) => { if (e.key === 'Escape' && !rec) { recPanelOpen(false); $('#recBtn').focus(); } });
+$('#recCaps').addEventListener('change', recRefresh);
+document.addEventListener('keydown', (e) => {   // R starts or stops a recording with the current settings
+  if (!recType || e.repeat || e.metaKey || e.ctrlKey || e.altKey || (e.key !== 'r' && e.key !== 'R')) return;
+  if (e.target.closest && e.target.closest('input, textarea, select, [contenteditable]')) return;
+  e.preventDefault();
+  if (rec) recStop(); else if (mixer) { $('#recDone').hidden = true; $('#recSetup').hidden = false; recStart(); }
+});
 $$('[data-rf]').forEach((b) => b.addEventListener('click', () => { recUI.frame = b.dataset.rf; recRefresh(); }));
 $$('[data-rl]').forEach((b) => b.addEventListener('click', () => { recUI.len = b.dataset.rl; recRefresh(); }));
 $('#recStart').addEventListener('click', recStart);
