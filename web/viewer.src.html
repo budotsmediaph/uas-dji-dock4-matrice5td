@@ -2,7 +2,7 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&family=Silkscreen:wght@400;700&display=swap">
 <style>
   /* Layout: a 3D stage on the left carries the model and the swap clock; the rail on the right explains the
      transfer ring, the battery slots and the build. Same tokens as the Dock 3 reconstruction, plus battery green. */
@@ -18,8 +18,10 @@
     --rec: #c8372d; --on-rec: #ffffff;
     --glass: rgba(247, 248, 249, .84);
     --shadow: 0 1px 2px rgba(15, 20, 24, .06), 0 8px 24px rgba(15, 20, 24, .08);
-    --display: "Archivo", "Helvetica Neue", Arial, sans-serif;
-    --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    /* one terminal face for all text, one pixel face for every sign inside a graphic (shared with the case study) */
+    --display: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+    --mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+    --pixel: "Silkscreen", "JetBrains Mono", monospace;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
@@ -296,6 +298,24 @@
   .onpage { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 12px; font: 600 12px/1.3 var(--mono); }
   .onpage a { color: var(--accent); text-decoration: none; border-bottom: 1px solid color-mix(in srgb, var(--accent) 40%, transparent); }
 __MORE_CSS__
+  /* ---------------------------------------------------------------- type: terminal text, pixel signs */
+  body { font-size: 14px; }
+  h1 { font-size: 28px; line-height: 1.08; font-stretch: 100%; letter-spacing: -.03em; }
+  .band-head h2, .step-card h2, .scen h3, .hour-head h3, .hname b { font-stretch: 100%; letter-spacing: -.02em; }
+  .kicker, h3, .section label, .blocks span, .times, .recw-body .lbl, .recw-body .opts button small, .slots thead th, .dims thead th,
+  .chip, .steps .k, .known b, .crumbs, .recw-key, .scen .tag2, .duty .cap2, .gens tr.grp th, .gens .up, .hname small, .hseg span,
+  .haxis > div, .console .side .brand, .console h4, .console .clockbar .state, .tile .hd, .tile .chip2, .kv .k, .log thead th, .live .osd,
+  .console .side .sample, .recw-t small {
+    font-family: var(--pixel); font-size: 8px; font-weight: 400; letter-spacing: .06em; -webkit-font-smoothing: none; }
+  .blocks span { line-height: 26px; }
+  .times { line-height: 12px; }
+  .live .osd { font-size: 8px; line-height: 12px; }
+  .pin, .tag, .tag b, .seg.small button, .vf-badge, .loading, .hsteps li::before, .vf-badge small {
+    font-family: var(--pixel); font-size: 16px; font-weight: 400; letter-spacing: .02em; -webkit-font-smoothing: none; }
+  .pin { line-height: 19px; }
+  .vf-badge small { font-size: 8px; }
+  .ring text, .console svg text, svg.hbat text { font-family: var(--pixel); font-weight: 400; letter-spacing: .04em; }
+  .ring .lbl, .ring .id, .ring .pct, .ring .cap, .console svg text { font-size: 8px; }
 </style>
 
 <div class="app">
@@ -993,7 +1013,8 @@ function recFinish(chunks) {
   $('#recLive').hidden = true; $('#recSetup').hidden = true; $('#recDone').hidden = false;
   recPanelOpen(true); recRefresh();
 }
-const CAP_SANS = '"Archivo", "Helvetica Neue", Arial, sans-serif', CAP_MONO = '"JetBrains Mono", ui-monospace, Menlo, monospace';
+const CAP_SANS = '"Silkscreen", ui-monospace, Menlo, monospace', CAP_MONO = CAP_SANS;   // captions are signs: pixel face
+document.fonts?.load('16px Silkscreen').catch(() => {});
 function capLines(g, text, maxW, max = 2) {
   const lines = []; let line = '';
   for (const w of text.split(' ')) { const t2 = line ? `${line} ${w}` : w; if (line && g.measureText(t2).width > maxW) { lines.push(line); line = w; } else line = t2; }
@@ -1008,25 +1029,25 @@ function drawCaptions(g, W, H) {
   const boxW = tall ? W - 2 * m : Math.min(W * 0.46, 780 * s);
   g.save();
   g.textBaseline = 'top';
-  g.font = `700 ${52 * s}px ${CAP_SANS}`;
+  g.font = `400 ${48 * s}px ${CAP_SANS}`;
   const lines = capLines(g, title, boxW - 2 * px);
-  const kickH = 24 * s, lineH = 58 * s, clockH = inSwap ? 44 * s : 0;
+  const kickH = 24 * s, lineH = 56 * s, clockH = inSwap ? 44 * s : 0;
   const boxH = 2 * py + kickH + 12 * s + lines.length * lineH + clockH;
   const x = m, y = tall ? H * 0.11 : H - m - 34 * s - boxH;     // 9:16: below the app's top bar; 16:9: bottom left, above the credit
   g.fillStyle = 'rgba(12, 16, 19, 0.8)';
   g.beginPath(); if (g.roundRect) g.roundRect(x, y, boxW, boxH, 16 * s); else g.rect(x, y, boxW, boxH); g.fill();
   g.fillStyle = '#29c4d7'; g.fillRect(x, y + 16 * s, 5 * s, boxH - 32 * s);
-  g.fillStyle = '#8fdde8'; g.font = `600 ${21 * s}px ${CAP_MONO}`; g.fillText(kick, x + px, y + py, boxW - 2 * px);
-  g.fillStyle = '#ffffff'; g.font = `700 ${52 * s}px ${CAP_SANS}`;
+  g.fillStyle = '#8fdde8'; g.font = `400 ${16 * s}px ${CAP_MONO}`; g.fillText(kick, x + px, y + py, boxW - 2 * px);
+  g.fillStyle = '#ffffff'; g.font = `400 ${48 * s}px ${CAP_SANS}`;
   lines.forEach((l, i) => g.fillText(l, x + px, y + py + kickH + 12 * s + i * lineH, boxW - 2 * px));
   if (inSwap) {
     const by = y + py + kickH + 12 * s + lines.length * lineH + 14 * s, bw = boxW - 2 * px - 200 * s;
     g.fillStyle = 'rgba(255, 255, 255, 0.2)'; g.fillRect(x + px, by + 9 * s, bw, 8 * s);
     g.fillStyle = '#29c4d7'; g.fillRect(x + px, by + 9 * s, (bw * swapS) / 25, 8 * s);
-    g.fillStyle = '#ffffff'; g.font = `600 ${24 * s}px ${CAP_MONO}`; g.textAlign = 'right';
+    g.fillStyle = '#ffffff'; g.font = `400 ${24 * s}px ${CAP_MONO}`; g.textAlign = 'right';
     g.fillText(`${swapS.toFixed(1)} / 25.0 s`, x + boxW - px, by); g.textAlign = 'left';
   }
-  g.font = `500 ${20 * s}px ${CAP_MONO}`;
+  g.font = `400 ${16 * s}px ${CAP_MONO}`;
   const credit = 'DJI Dock 4 + Matrice 5TD · unofficial reconstruction · budotsmedia.com/uas';
   const cl = tall ? capLines(g, credit, W - 2 * m - 24 * s) : [credit], ch = 30 * s;
   const cw = Math.min(W - 2 * m, Math.max(...cl.map((l) => g.measureText(l).width)) + 24 * s);

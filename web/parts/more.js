@@ -510,7 +510,7 @@
       if (live.cam === 'wide' && a.kind === 'Car') { cx.fillStyle = 'rgba(255,240,200,0.9)'; cx.beginPath(); cx.arc(tx(a.x + a.w * 0.5), tyy(a.y - 4), 3 * s, 0, 7); cx.fill(); }
     }
     if (live.ai) {
-      cx.lineWidth = 2; cx.font = `600 ${Math.round(15)}px ui-monospace, Menlo, monospace`;
+      cx.lineWidth = 2; cx.font = '400 16px Silkscreen, ui-monospace, Menlo, monospace';
       for (const a of acts) {
         const x0 = tx(a.x - a.w * 0.65), y0 = tyy(a.y - a.h * 0.75), w = a.w * 1.3 * s, h = a.h * 1.5 * s;
         if (x0 > W || y0 > H || x0 + w < 0 || y0 + h < 0) continue;

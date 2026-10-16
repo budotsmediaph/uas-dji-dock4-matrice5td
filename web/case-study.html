@@ -19,11 +19,11 @@
 <script>window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', 'G-2QYQ7Y2JRK');</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Silkscreen:wght@400;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Silkscreen:wght@400;700&display=swap">
 <style>
   /* Dot Portal design system, "night" theme: whole pixels, no rounding, bevels, one hard drop, stepped motion.
-     Pixel faces: DotGothic16 (OFL) for copy; Silkscreen (OFL) for Latin labels, in place of the 04 fonts,
-     whose licence does not cover redistribution on a commercial site. */
+     Type shared with the 3D viewer: a terminal face (JetBrains Mono) for all text, a pixel face (Silkscreen, OFL)
+     for every sign: title bars, labels, ticker, counters, telemetry keys. */
   :root {
     color-scheme: dark;
     --surface: #000033; --surface-tint: #000066; --surface-band: #333399; --chrome: #333366;
@@ -35,13 +35,13 @@
     --bevel-in: inset 2px 2px 0 #000000, inset -2px -2px 0 #6666cc;
     --drop: 4px 4px 0 #9999ff;
     --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px; --space-6: 24px; --space-8: 32px;
-    --font-dot: "DotGothic16", "MS Gothic", "Osaka-Mono", monospace;
-    --font-label: "Silkscreen", "DotGothic16", monospace;
+    --font-dot: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+    --font-label: "Silkscreen", "JetBrains Mono", monospace;
     --top: 64px;
   }
   html { background: var(--surface); scroll-behavior: auto; }
-  body { margin: 0; background: var(--surface); color: var(--ink); font: 400 16px/24px var(--font-dot);
-    -webkit-font-smoothing: none; -moz-osx-font-smoothing: unset; font-smooth: never; text-rendering: optimizeSpeed; }
+  body { margin: 0; background: var(--surface); color: var(--ink); font: 400 15px/24px var(--font-dot); -webkit-font-smoothing: antialiased; }
+  .top, .mq, .pips, .tele dt, .box > .tb, .badge, table.dt th, .counter, .counter-row span, .btn, .hint, .credits .lbl, .loading, .num { -webkit-font-smoothing: none; }
   a { color: var(--link); text-decoration: underline; text-underline-offset: 3px; }
   a:visited { color: var(--link-visited); }
   :focus-visible { outline: 2px dotted var(--ink); outline-offset: 2px; }
@@ -75,7 +75,7 @@
   .pips a[aria-current="step"] i { background: var(--hot); border-color: var(--hot); }
   .pips a[aria-current="step"] { color: var(--ink); }
   .tele { position: fixed; left: max(16px, env(safe-area-inset-left, 0px)); bottom: max(16px, env(safe-area-inset-bottom, 0px)); z-index: 4; width: 232px; }
-  .tele dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; padding: 8px 12px 12px; font: 400 16px/16px var(--font-dot); }
+  .tele dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; padding: 8px 12px 12px; font: 500 14px/16px var(--font-dot); }
   .tele dt { color: var(--ink-muted); font: 400 8px/16px var(--font-label); }
   .tele dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
   .tele dd.ok { color: var(--ok); }
@@ -97,15 +97,15 @@
   .ch article { position: sticky; top: calc(var(--top) + 32px); width: min(448px, 100%); margin-left: auto; margin-right: max(0px, calc((100vw - 1440px) / 2)); }
   .ch.hero article { position: relative; top: auto; margin-top: max(16px, calc(100vh - var(--top) - 470px)); }
   h1, h2 { margin: 0 0 var(--space-3); font-weight: 400; text-wrap: balance; }
-  h1 { font: 400 48px/56px var(--font-dot); }
-  h2 { font: 400 32px/40px var(--font-dot); }
+  h1 { font: 800 36px/44px var(--font-dot); letter-spacing: -.03em; }
+  h2 { font: 700 24px/32px var(--font-dot); letter-spacing: -.02em; }
   .bd p { margin: 0 0 var(--space-3); }
   .bd p.muted { color: var(--ink-muted); }
   .hint { font: 400 16px/16px var(--font-label); color: var(--accent); animation: blink 1.2s steps(1) infinite; margin: var(--space-4) 0 0 !important; }
   table.dt { width: 100%; border-collapse: collapse; margin-top: var(--space-4); border: 1px solid var(--line); }
   table.dt th, table.dt td { padding: 4px 8px; border-bottom: 1px solid var(--surface-band); text-align: left; vertical-align: top; }
   table.dt th { width: 38%; background: var(--surface-tint); color: var(--ink-muted); font: 400 8px/16px var(--font-label); letter-spacing: 0; }
-  table.dt td { font: 400 16px/24px var(--font-dot); }
+  table.dt td { font: 400 14px/24px var(--font-dot); }
   .counters { display: grid; gap: var(--space-3); margin-top: var(--space-4); }
   .counter-row { display: flex; justify-content: space-between; align-items: center; gap: var(--space-3); }
   .counter-row span { font: 400 16px/16px var(--font-label); }
@@ -120,9 +120,9 @@
   /* end: credits sit only here, small */
   .end { position: relative; z-index: 2; padding: 64px max(16px, env(safe-area-inset-right, 0px)) max(32px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
     background: linear-gradient(to bottom, rgba(0, 0, 51, 0), var(--surface) 96px); }
-  .credits { max-width: 720px; margin: 0 auto; padding-top: var(--space-4); border-top: 1px dotted var(--line); font: 400 16px/24px var(--font-dot); color: var(--ink-muted); }
+  .credits { max-width: 720px; margin: 0 auto; padding-top: var(--space-4); border-top: 1px dotted var(--line); font: 400 13px/22px var(--font-dot); color: var(--ink-muted); }
   .credits p { margin: 0 0 var(--space-2); }
-  .credits small { font-size: 16px; }
+  .credits small { font-size: 13px; }
   .credits .lbl { font: 400 8px/16px var(--font-label); color: var(--line); }
 
   @media (max-width: 760px) {
@@ -130,14 +130,14 @@
     .top nav a.hide-s { display: none; }
     .tele { left: 8px; right: 8px; width: auto; bottom: max(8px, env(safe-area-inset-bottom, 0px)); }
     .tele > .tb { display: none; }
-    .tele dl { grid-template-columns: repeat(4, auto 1fr); gap: 2px 6px; padding: 6px 8px; font-size: 16px; }
+    .tele dl { grid-template-columns: repeat(4, auto 1fr); gap: 2px 6px; padding: 6px 8px; font-size: 12px; }
     .tele dt { font-size: 8px; }
     .tele .wide-only { display: none; }
     .ch { min-height: 170vh; }
     .ch.tall { min-height: 230vh; }
     .ch article { position: relative; top: auto; margin-top: 62vh; }
     .ch.hero article { margin-top: max(16px, calc(100vh - var(--top) - 520px)); }
-    h1 { font: 400 32px/40px var(--font-dot); }
+    h1 { font: 800 28px/36px var(--font-dot); }
     .num { left: 16px; top: 14vh; }
   }
   @media (prefers-reduced-motion: reduce) { .mq-track, .badge, .hint { animation: none; } }
