@@ -1,0 +1,1017 @@
+<title>UAS · DJI Dock 4 + Matrice 5TD</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+  /* Layout: a 3D stage on the left carries the model and the swap clock; the rail on the right explains the
+     transfer ring, the battery slots and the build. Same tokens as the Dock 3 reconstruction, plus battery green. */
+  :root {
+    --page: #e6e9ec; --panel: #f7f8f9; --panel-2: #eef1f3;
+    --ink: #0f1418; --ink-2: #56626d; --ink-3: #8a959f; --rule: #d2d9df;
+    --accent: #07798a; --accent-fill: #16b2c5; --on-accent: #02262c;
+    --cell: #2f9a5c; --cell-bg: #d8efe2; --cell-off: #d9dfe4;
+    --stage-top: #f3f5f7; --stage-horizon: #d4dbe1;
+    --band-idle: #d9dfe4; --band-dock: #b8c3cc; --band-flight: #f3c969; --band-swap: #7fd3dd;
+    --hold: #a61f18; --hold-bg: #f8dbd7; --caution: #7a560c; --caution-bg: #f7e8c8;
+    --edge: #2a3640; --ring-body: #c4ccd3; --ring-cage: #6d7983;
+    --glass: rgba(247, 248, 249, .84);
+    --shadow: 0 1px 2px rgba(15, 20, 24, .06), 0 8px 24px rgba(15, 20, 24, .08);
+    --display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --page: #090c0e; --panel: #111519; --panel-2: #161b20; --ink: #e8edf0; --ink-2: #8e9aa5; --ink-3: #5d6873; --rule: #222a31;
+      --accent: #5fd6e5; --accent-fill: #29c4d7; --on-accent: #01262b;
+      --cell: #6fcf98; --cell-bg: #15301f; --cell-off: #263038;
+      --stage-top: #1c2329; --stage-horizon: #0c1013;
+      --band-idle: #1e252b; --band-dock: #37424b; --band-flight: #8f6f1f; --band-swap: #1f7780;
+      --hold: #f38a80; --hold-bg: #381612; --caution: #ebc36b; --caution-bg: #302508;
+      --edge: #b9c6d0; --ring-body: #2c353d; --ring-cage: #7b8792;
+      --glass: rgba(17, 21, 25, .8); --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 10px 30px rgba(0, 0, 0, .35);
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --page: #090c0e; --panel: #111519; --panel-2: #161b20; --ink: #e8edf0; --ink-2: #8e9aa5; --ink-3: #5d6873; --rule: #222a31;
+    --accent: #5fd6e5; --accent-fill: #29c4d7; --on-accent: #01262b;
+    --cell: #6fcf98; --cell-bg: #15301f; --cell-off: #263038;
+    --stage-top: #1c2329; --stage-horizon: #0c1013;
+    --band-idle: #1e252b; --band-dock: #37424b; --band-flight: #8f6f1f; --band-swap: #1f7780;
+    --hold: #f38a80; --hold-bg: #381612; --caution: #ebc36b; --caution-bg: #302508;
+    --edge: #b9c6d0; --ring-body: #2c353d; --ring-cage: #7b8792;
+    --glass: rgba(17, 21, 25, .8); --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 10px 30px rgba(0, 0, 0, .35);
+    color-scheme: dark;
+  }
+
+  body { background: var(--page); color: var(--ink); font: 400 15px/1.45 var(--display); -webkit-font-smoothing: antialiased; }
+  .app { box-sizing: border-box; height: 100vh; height: 100svh; min-height: 620px; max-height: 1120px; padding-block: 16px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+    display: grid; grid-template-columns: minmax(0, 1fr) 420px; gap: 16px; }
+  .num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+
+  /* ---------------------------------------------------------------- stage */
+  .stage { position: relative; min-height: 0; overflow: hidden; border-radius: 16px; background: var(--stage-horizon); }
+  .stage canvas { display: block; width: 100%; height: 100%; outline: none; }
+  .loading { position: absolute; inset: 0; display: grid; place-items: center; padding: 16px; text-align: center;
+    font: 600 12px/1.5 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-2); }
+  .glass { background: var(--glass); backdrop-filter: blur(14px) saturate(1.2); -webkit-backdrop-filter: blur(14px) saturate(1.2);
+    border: 1px solid color-mix(in srgb, var(--rule) 70%, transparent); border-radius: 12px; box-shadow: var(--shadow); }
+  .hud { position: absolute; top: 14px; left: 14px; right: 14px; display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; pointer-events: none; }
+  .step-card { padding: 12px 14px; display: grid; gap: 6px; width: min(360px, 52vw); box-sizing: border-box; }
+  .kicker { font: 600 10.5px/1.2 var(--mono); letter-spacing: .16em; text-transform: uppercase; color: var(--ink-3); }
+  .step-card h2 { margin: 0; font: 700 22px/1.08 var(--display); font-stretch: 88%; letter-spacing: -.01em; text-wrap: balance; }
+  .step-card p { margin: 0; font-size: 13px; line-height: 1.4; color: var(--ink-2); }
+  .swapclock { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 10px; margin-top: 2px; }
+  .swapbar { height: 6px; border-radius: 3px; background: var(--band-idle); overflow: hidden; }
+  .swapbar i { display: block; height: 100%; width: 0; background: var(--accent-fill); }
+  .swapclock .num { font-size: 12px; color: var(--ink-2); }
+  .swapclock .num b { color: var(--ink); }
+  .hud-right { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; pointer-events: auto; }
+  .seg { display: flex; flex-wrap: wrap; justify-content: flex-end; padding: 3px; gap: 2px; }
+  .seg button { font: 600 12.5px/1 var(--display); color: var(--ink-2); background: none; border: 0; border-radius: 8px; padding: 8px 11px; cursor: pointer; }
+  .seg button[aria-pressed="true"] { background: var(--ink); color: var(--panel); }
+  .seg button:hover:not([aria-pressed="true"]) { color: var(--ink); }
+  .seg.small button { font: 500 11px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; padding: 7px 9px; }
+  .section { padding: 9px 12px 10px; display: grid; gap: 6px; width: 230px; box-sizing: border-box; }
+  .section .row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .section label { font: 600 10.5px/1.2 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); }
+  .section output { font: 600 12px/1 var(--mono); }
+  .section input[type=range] { width: 100%; margin: 0; accent-color: var(--accent-fill); }
+
+  .deck { position: absolute; left: 14px; right: 14px; bottom: 14px; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 14px; padding: 10px 14px 10px 10px; }
+  .play { width: 44px; height: 44px; border-radius: 10px; border: 0; background: var(--ink); color: var(--panel); display: grid; place-items: center; cursor: pointer; }
+  .play svg { width: 16px; height: 16px; }
+  .track { position: relative; height: 44px; }
+  .blocks { position: absolute; inset: 0 0 18px 0; display: flex; gap: 2px; }
+  .blocks span { position: relative; height: 100%; border-radius: 5px; overflow: hidden; min-width: 0;
+    font: 600 10px/26px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: color-mix(in srgb, var(--ink) 75%, transparent);
+    padding: 0 6px; white-space: nowrap; opacity: .8; transition: opacity .15s; }
+  .blocks span.now { opacity: 1; box-shadow: inset 0 0 0 1.5px var(--ink); }
+  .blocks span.tight { color: transparent; }
+  .blocks .flight { background: var(--band-flight); } .blocks .dock { background: var(--band-dock); } .blocks .swap { background: var(--band-swap); }
+  .blocks .tick { position: absolute; top: 4px; bottom: 4px; width: 1px; background: color-mix(in srgb, var(--ink) 30%, transparent); }
+  .playhead { position: absolute; top: -3px; bottom: 15px; width: 2px; margin-left: -1px; background: var(--ink); border-radius: 1px; pointer-events: none; }
+  .playhead::after { content: ""; position: absolute; left: -4px; top: -3px; width: 10px; height: 10px; border-radius: 50%; background: var(--ink); box-shadow: 0 0 0 2px var(--panel); }
+  #scrub { position: absolute; inset: 0 0 14px 0; width: 100%; height: 30px; margin: 0; opacity: 0; cursor: pointer; }
+  .times { position: absolute; left: 0; right: 0; bottom: 0; height: 12px; display: flex; justify-content: space-between; font: 500 10.5px/12px var(--mono); color: var(--ink-3); }
+  .times b { color: var(--ink); font-weight: 600; }
+  .speed { font: 600 11.5px/1 var(--mono); color: var(--ink); background: var(--panel-2); border: 1px solid var(--rule); border-radius: 8px; padding: 9px 10px; cursor: pointer; min-width: 44px; }
+
+  .pins { position: absolute; inset: 0; pointer-events: none; }
+  .pin { position: absolute; left: 0; top: 0; height: 22px; min-width: 22px; padding: 0 5px; box-sizing: border-box; margin: -11px 0 0 -11px;
+    border-radius: 11px; border: 1.5px solid var(--accent-fill); background: var(--glass); color: var(--ink);
+    font: 600 10px/19px var(--mono); text-align: center; pointer-events: auto; cursor: pointer; transition: opacity .2s; backdrop-filter: blur(6px); }
+  .pin.wide { margin-left: -15px; }
+  .pin[aria-pressed="true"] { background: var(--accent-fill); color: var(--on-accent); z-index: 2; }
+  .tag { position: absolute; left: 0; top: 0; pointer-events: none; background: var(--ink); color: var(--panel); font: 600 13px/1.25 var(--display);
+    padding: 7px 10px; border-radius: 8px; white-space: nowrap; box-shadow: var(--shadow); z-index: 3; }
+  .tag b { font: 600 11px/1 var(--mono); color: var(--accent-fill); margin-right: 7px; }
+
+  /* ---------------------------------------------------------------- rail */
+  .rail { min-height: 0; overflow-y: auto; background: var(--panel); border-radius: 16px; border: 1px solid var(--rule);
+    padding: 24px 22px 26px; display: flex; flex-direction: column; gap: 22px; }
+  .masthead .kicker { color: var(--accent); }
+  .crumbs { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 12px; font: 600 12px/1.2 var(--mono); letter-spacing: .06em; color: var(--ink-3); }
+  .crumbs a { color: var(--ink-2); text-decoration: none; border-bottom: 1px solid var(--rule); }
+  .crumbs a:hover { color: var(--accent); border-color: var(--accent); }
+  h1 { margin: 8px 0 10px; font: 800 34px/.98 var(--display); font-stretch: 78%; letter-spacing: -.015em; text-wrap: balance; }
+  h1 span { display: block; font: 500 14.5px/1.35 var(--display); font-stretch: 100%; letter-spacing: 0; color: var(--ink-2); margin-top: 10px; }
+  .masthead p { margin: 0; color: var(--ink-2); max-width: 62ch; }
+  .tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; padding: 3px; background: var(--panel-2); border-radius: 11px; border: 1px solid var(--rule); }
+  .tabs button { font: 600 13px/1 var(--display); color: var(--ink-2); background: none; border: 0; border-radius: 8px; padding: 10px 6px; cursor: pointer; }
+  .tabs button[aria-selected="true"] { background: var(--panel); color: var(--ink); box-shadow: 0 1px 2px rgba(0, 0, 0, .08), 0 0 0 1px var(--rule); }
+  .panel { display: flex; flex-direction: column; gap: 26px; }
+  h3 { margin: 0 0 12px; font: 600 10.5px/1.2 var(--mono); letter-spacing: .16em; text-transform: uppercase; color: var(--ink-3);
+    display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  h3 small { font: 400 12px/1.2 var(--display); letter-spacing: 0; text-transform: none; color: var(--ink-3); }
+  .note { margin: 10px 0 0; font-size: 13px; line-height: 1.5; color: var(--ink-2); }
+
+  .ring { width: 100%; max-width: 376px; height: auto; display: block; margin: 0 auto; }
+  .ring text { font-family: var(--mono); fill: var(--ink); }
+  .ring .lbl { font-size: 11px; font-weight: 600; fill: var(--ink-2); }
+  .ring .id { font-size: 9px; font-weight: 600; }
+  .ring .pct { font-size: 9px; fill: var(--ink-2); }
+  .ring .cap { font-size: 9.5px; fill: var(--ink-3); letter-spacing: .06em; }
+  .screw { display: grid; grid-template-columns: max-content minmax(0, 1fr) max-content; align-items: center; gap: 10px; margin-top: 10px; font-size: 13px; color: var(--ink-2); }
+  .screw .bar { height: 6px; border-radius: 3px; background: var(--band-idle); position: relative; overflow: hidden; }
+  .screw .bar i { position: absolute; top: 0; bottom: 0; left: 0; width: 0; background: var(--ink); border-radius: 3px; }
+  .screw .num { font-size: 12px; color: var(--ink); }
+
+  .slots { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+  .slots th, .slots td { padding: 8px 0; border-bottom: 1px solid var(--rule); text-align: left; vertical-align: middle; }
+  .slots thead th { font: 600 10.5px/1 var(--mono); letter-spacing: .12em; color: var(--ink-3); padding-top: 0; }
+  .slots td { font-size: 13.5px; }
+  .slots td.id { font: 600 13px/1 var(--mono); width: 34px; }
+  .slots td.where { color: var(--ink-2); }
+  .slots tr.moving td { color: var(--accent); }
+  .cells { display: inline-flex; gap: 2px; vertical-align: middle; margin-right: 7px; }
+  .cells i { width: 9px; height: 7px; border-radius: 2px; background: var(--cell-off); }
+  .cells i.on { background: var(--cell); }
+  .lvl { font: 600 12.5px/1 var(--mono); }
+  .chip { display: inline-block; font: 600 10px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; padding: 5px 7px; border-radius: 6px; background: var(--panel-2); color: var(--ink-2); white-space: nowrap; }
+  .chip.charge { background: var(--cell-bg); color: var(--cell); }
+  .chip.move { background: color-mix(in srgb, var(--accent-fill) 22%, transparent); color: var(--accent); }
+
+  .steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 1px; counter-reset: s; }
+  .steps button { width: 100%; display: grid; grid-template-columns: 26px minmax(0, 1fr) 58px; gap: 10px; align-items: baseline; text-align: left;
+    background: none; border: 0; border-radius: 8px; padding: 7px 6px; color: var(--ink); font: 400 14px/1.3 var(--display); cursor: pointer; }
+  .steps button:hover { background: var(--panel-2); }
+  .steps button[aria-current="step"] { background: color-mix(in srgb, var(--accent-fill) 16%, var(--panel)); }
+  .steps .k { font: 600 11px/1 var(--mono); color: var(--ink-3); }
+  .steps .t { font: 500 11.5px/1 var(--mono); color: var(--ink-3); text-align: right; }
+  .steps button[aria-current="step"] .k, .steps button[aria-current="step"] .t { color: var(--accent); }
+
+  .dims { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+  .dims th, .dims td { padding: 8px 0; border-bottom: 1px solid var(--rule); }
+  .dims thead th { font: 600 10.5px/1 var(--mono); letter-spacing: .12em; color: var(--ink-3); text-align: right; padding-top: 0; }
+  .dims thead th:first-child { text-align: left; }
+  .dims tbody th { text-align: left; font: 500 14px/1.25 var(--display); color: var(--ink-2); }
+  .dims td { text-align: right; font: 500 14px/1.2 var(--mono); width: 18%; }
+  .dims tr.model th, .dims tr.model td { color: var(--ink); font-weight: 600; }
+  .ok { display: inline-flex; align-items: center; gap: 8px; margin-top: 12px; font: 600 12.5px/1 var(--display); padding: 8px 12px; border-radius: 999px; background: var(--cell-bg); color: var(--cell); }
+  .ok::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+  .facts { margin: 0; display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 7px 16px; font-size: 14px; }
+  .facts dt { color: var(--ink-2); }
+  .facts dd { margin: 0; }
+
+  .switch { display: grid; grid-template-columns: 36px minmax(0, 1fr); align-items: center; gap: 12px; padding: 9px 0; cursor: pointer; border-bottom: 1px solid var(--rule); }
+  .switch:last-child { border-bottom: 0; }
+  .switch input { -webkit-appearance: none; appearance: none; margin: 0; width: 36px; height: 21px; border-radius: 11px; background: var(--panel-2);
+    border: 1px solid var(--rule); position: relative; cursor: pointer; transition: background .15s; }
+  .switch input::after { content: ""; position: absolute; top: 2px; left: 2px; width: 15px; height: 15px; border-radius: 50%; background: var(--ink-3); transition: transform .15s, background .15s; }
+  .switch input:checked { background: var(--accent-fill); border-color: var(--accent-fill); }
+  .switch input:checked::after { transform: translateX(15px); background: var(--on-accent); }
+  .switch span { font-weight: 500; }
+  .switch small { display: block; font-weight: 400; font-size: 12.5px; color: var(--ink-2); }
+
+  .parts { list-style: none; margin: 0; padding: 0; display: grid; gap: 1px; }
+  .parts button { width: 100%; display: grid; grid-template-columns: 38px minmax(0, 1fr); gap: 10px; align-items: center; text-align: left;
+    background: none; border: 0; border-radius: 8px; padding: 5px 6px; color: var(--ink); font: 400 14px/1.3 var(--display); cursor: pointer; }
+  .parts button:hover, .parts button[aria-pressed="true"] { background: var(--panel-2); }
+  .parts .n { justify-self: start; min-width: 22px; height: 22px; padding: 0 5px; box-sizing: border-box; border-radius: 11px; border: 1.5px solid var(--accent-fill);
+    font: 600 10px/19px var(--mono); text-align: center; }
+  .parts button[aria-pressed="true"] .n { background: var(--accent-fill); color: var(--on-accent); }
+  .group-label { font: 600 12.5px/1.2 var(--display); color: var(--ink-2); margin: 16px 0 6px; }
+  .group-label:first-child { margin-top: 0; }
+
+  .known { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+  .known li { display: grid; grid-template-columns: 74px minmax(0, 1fr); gap: 12px; font-size: 13.5px; line-height: 1.45; }
+  .known b { font: 600 10px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; padding: 6px 0; border-radius: 6px; text-align: center; align-self: start; }
+  .known .dji b { background: var(--cell-bg); color: var(--cell); }
+  .known .fit b { background: color-mix(in srgb, var(--accent-fill) 18%, transparent); color: var(--accent); }
+  .known .est b { background: var(--caution-bg); color: var(--caution); }
+  .sources { font-size: 12.5px; line-height: 1.5; color: var(--ink-2); border-top: 1px solid var(--rule); padding-top: 16px; }
+  .sources p { margin: 0 0 8px; }
+  .sources b { color: var(--ink); font-weight: 600; }
+  .sources a { color: var(--accent); }
+  .sig { font: 500 11px/1.4 var(--mono); color: var(--ink-3); }
+
+  button:focus-visible, input:focus-visible, canvas:focus-visible { outline: 2px solid var(--accent-fill); outline-offset: 2px; }
+  @media (max-width: 960px) {
+    .app { height: auto; grid-template-columns: minmax(0, 1fr); grid-template-rows: min(74svh, 680px) auto; }
+    .stage { min-height: 460px; }
+    .rail { overflow: visible; }
+  }
+  @media (max-width: 600px) {
+    .speed { display: none; }
+    .deck { grid-template-columns: auto minmax(0, 1fr); }
+    .blocks span { font-size: 0; }
+    .step-card { width: 100%; }
+    .step-card h2 { font-size: 18px; }
+    .step-card p { display: none; }
+    .hud { flex-direction: column; align-items: stretch; }
+    .hud-right { align-items: stretch; }
+    .seg { justify-content: flex-start; }
+    .seg button { padding: 7px 8px; }
+    .section { width: 100%; }
+  }
+  @media (prefers-reduced-motion: reduce) { .pin, .switch input, .switch input::after { transition: none; } }
+  .onpage { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 12px; font: 600 12px/1.3 var(--mono); }
+  .onpage a { color: var(--accent); text-decoration: none; border-bottom: 1px solid color-mix(in srgb, var(--accent) 40%, transparent); }
+__MORE_CSS__
+</style>
+
+<div class="app">
+  <section class="stage" id="stage" aria-label="3D model of DJI Dock 4 and the Matrice 5TD during a battery swap">
+    <canvas id="view" tabindex="0" aria-label="Drag to orbit, scroll to zoom, space to play or pause"></canvas>
+    <div class="pins" id="pins"></div>
+    <div class="hud">
+      <div class="step-card glass" aria-live="polite">
+        <span class="kicker" id="stepKicker">Landing</span>
+        <h2 id="stepTitle">Aircraft lands on the pad</h2>
+        <p id="stepDetail">The aircraft descends into the channel between the two humps of the landing pad.</p>
+        <div class="swapclock"><div class="swapbar"><i id="swapFill"></i></div><span class="num" id="swapClock"><b>0.0</b> / 25.0 s swap</span></div>
+      </div>
+      <div class="hud-right">
+        <div class="seg glass" role="group" aria-label="Display mode">
+          <button type="button" data-mode="solid" aria-pressed="false">Solid</button>
+          <button type="button" data-mode="xray" aria-pressed="true">X-ray</button>
+          <button type="button" data-mode="cut" aria-pressed="false">Cut-away</button>
+        </div>
+        <div class="seg small glass" role="group" aria-label="Camera">
+          <button type="button" data-view="three" aria-pressed="true">¾</button>
+          <button type="button" data-view="rear" aria-pressed="false">Rear</button>
+          <button type="button" data-view="side" aria-pressed="false">Side</button>
+          <button type="button" data-view="top" aria-pressed="false">Top</button>
+          <button type="button" data-view="bay" aria-pressed="false">Bay</button>
+        </div>
+        <div class="section glass" id="sectionBox" hidden>
+          <div class="row"><label for="cutAxis">Section</label>
+            <div class="seg small" role="group" aria-label="Section plane" style="padding:0">
+              <button type="button" data-axis="side" aria-pressed="true">Side</button>
+              <button type="button" data-axis="rear" aria-pressed="false">Rear</button>
+            </div></div>
+          <input type="range" id="cutAxis" min="-140" max="320" step="1" value="30" aria-label="Section plane position in millimetres">
+          <div class="row"><label for="cutAxis" id="cutName">From cabinet face</label><output id="cutOut" for="cutAxis">−30 mm</output></div>
+        </div>
+      </div>
+    </div>
+    <div class="deck glass">
+      <button type="button" class="play" id="play" aria-label="Pause">
+        <svg id="icoPause" viewBox="0 0 16 16" aria-hidden="true"><rect x="3" y="2" width="3.5" height="12" rx="1" fill="currentColor"/><rect x="9.5" y="2" width="3.5" height="12" rx="1" fill="currentColor"/></svg>
+        <svg id="icoPlay" viewBox="0 0 16 16" aria-hidden="true" hidden><path d="M4 2.2v11.6c0 .6.7 1 1.2.6l8.3-5.8a.75.75 0 0 0 0-1.2L5.2 1.6C4.7 1.2 4 1.6 4 2.2z" fill="currentColor"/></svg>
+      </button>
+      <div class="track">
+        <div class="blocks" id="blocks"></div>
+        <div class="playhead" id="playhead"></div>
+        <input id="scrub" type="range" min="0" max="44" step="0.01" value="0" aria-label="Time in seconds">
+        <div class="times"><span><b id="clock">0.0</b> s</span><span id="total">44.0 s</span></div>
+      </div>
+      <button type="button" class="speed" id="speed" aria-label="Playback speed">1×</button>
+    </div>
+    <div class="loading" id="loading">Loading model</div>
+  </section>
+
+  <aside class="rail">
+    <header class="masthead">
+      __SITE_NAV__<span class="kicker">Unofficial reconstruction</span>
+      <h1>DJI Dock 4 + Matrice 5TD<span>Battery swap, reconstructed in Blender · built by Claude Opus 5.5</span></h1>
+      <p>Built in Blender from DJI's spec page, manuals and launch footage, with the dock checked to the millimetre against both published envelopes. Play a full turnaround: landing, cover closing, the 25-second battery swap, cover opening and take-off. Switch to X-ray or Cut-away to watch the battery leave the tail, ride the rotor to a compartment and come back charged.</p>
+      <nav class="onpage" aria-label="Sections below the viewer"><a href="#scenarios">01 Scenarios</a><a href="#generations">02 Dock 2 → 4 compared</a><a href="#screens">03 Operator screens</a></nav>
+    </header>
+
+    <div class="tabs" role="tablist" aria-label="Viewer sections">
+      <button type="button" role="tab" id="tabSwap" aria-controls="panelSwap" aria-selected="true">Swap</button>
+      <button type="button" role="tab" id="tabModel" aria-controls="panelModel" aria-selected="false">Model</button>
+      <button type="button" role="tab" id="tabNotes" aria-controls="panelNotes" aria-selected="false">Evidence</button>
+    </div>
+
+    <div class="panel" id="panelSwap" role="tabpanel" aria-labelledby="tabSwap">
+      <section>
+        <h3>Transfer ring <small>seen from behind, live</small></h3>
+        <svg class="ring" id="ring" viewBox="0 0 320 300" role="img" aria-label="Rear view of the transfer ring: the aircraft's battery bay at 12 o'clock and compartments A to D around the rotor axis"></svg>
+        <div class="screw"><span>Lead screw</span><div class="bar"><i id="screwFill"></i></div><span class="num" id="screwOut">0 / 185 mm</span></div>
+        <p class="note">The aircraft's battery bay and the four compartments lie on one circle (radius 165 mm, estimated) around a rotor axis parallel to the aircraft. The cradle turns with the rotor; its hook rides a lead screw along that axis to pull or push a battery. The hatch plate opposite the cradle closes the pad when the rotor is home.</p>
+      </section>
+
+      <section>
+        <h3>Batteries <small>4 packs, 3 stored at most</small></h3>
+        <table class="slots">
+          <thead><tr><th scope="col">ID</th><th scope="col">Where</th><th scope="col">Level</th><th scope="col">State</th></tr></thead>
+          <tbody id="slotRows"></tbody>
+        </table>
+        <p class="note">One compartment always stays free so the rotor can put the used battery down before it fetches a charged one. Two packs charge at a time (27 min, 15 → 95 %). Levels in the clip are set at the start; the LED patterns follow user manual p. 71.</p>
+      </section>
+
+      <section>
+        <h3>Swap sequence <small>select to jump</small></h3>
+        <ol class="steps" id="steps"></ol>
+        <p class="note">DJI states under 25 s from cover fully closed to swap complete, and under 45 s from landing to take-off. DJI publishes no sub-step timing; the split here is an estimate that adds up to 25.0 s.</p>
+      </section>
+    </div>
+
+    <div class="panel" id="panelModel" role="tabpanel" aria-labelledby="tabModel" hidden>
+      <section>
+        <h3>Envelope check <small>mm</small></h3>
+        <table class="dims">
+          <thead><tr><th scope="col"><span hidden>Row</span></th><th scope="col">L</th><th scope="col">W</th><th scope="col">H</th></tr></thead>
+          <tbody>
+            <tr class="model"><th scope="row">Model, cover closed</th><td>__CL__</td><td>__CW__</td><td>__CH__</td></tr>
+            <tr><th scope="row">DJI spec, closed</th><td>639</td><td>640</td><td>836</td></tr>
+            <tr class="model"><th scope="row">Model, cover open</th><td>__OL__</td><td>__OW__</td><td>__OH__</td></tr>
+            <tr><th scope="row">DJI spec, open</th><td>1750</td><td>640</td><td>550</td></tr>
+          </tbody>
+        </table>
+        <div class="ok">Within ±1 mm on every axis</div>
+        <p class="note">Measured by the Blender build, which fails if any axis is off by more than 1 mm. Like DJI's figures, L and H include the 145 mm wind speed gauge and the 69 mm mounting brackets; L runs in the direction the cover opens.</p>
+        <table class="dims" style="margin-top:20px">
+          <thead><tr><th scope="col">Matrice 5TD, no propellers</th><th scope="col">L</th><th scope="col">W</th><th scope="col">H</th></tr></thead>
+          <tbody>
+            <tr class="model"><th scope="row">Model</th><td>__AL__</td><td>__AW__</td><td>__AH__</td></tr>
+            <tr><th scope="row">DJI STEP vertices</th><td>391.6</td><td>475.0</td><td>—</td></tr>
+            <tr><th scope="row">User manual</th><td>392.5</td><td>416.2</td><td>230.8</td></tr>
+            <tr><th scope="row">Spec page</th><td>393</td><td>477</td><td>230</td></tr>
+          </tbody>
+        </table>
+        <p class="note">DJI's two published widths disagree. The points recovered from DJI's own STEP span 475 mm across the front motors, which matches the spec page. The model's wheelbase is __WB__ mm against DJI's 549 mm.</p>
+      </section>
+
+      <section>
+        <h3>Layers</h3>
+        <label class="switch" for="lyrPins"><input type="checkbox" id="lyrPins" checked><span>Part callouts <small>Numbering from the user manual</small></span></label>
+        <label class="switch" for="lyrEdges"><input type="checkbox" id="lyrEdges" checked><span>Outlines in X-ray <small>Creases of the dock and the cover</small></span></label>
+        <label class="switch" for="lyrCover"><input type="checkbox" id="lyrCover" checked><span>Dock cover</span></label>
+        <label class="switch" for="lyrAircraft"><input type="checkbox" id="lyrAircraft" checked><span>Matrice 5TD aircraft</span></label>
+      </section>
+
+      <section>
+        <h3>Parts <small>select to locate</small></h3>
+        __PARTS__
+      </section>
+    </div>
+
+    <div class="panel" id="panelNotes" role="tabpanel" aria-labelledby="tabNotes" hidden>
+      <section>
+        <h3>What the model is based on</h3>
+        <ul class="known">
+          <li class="dji"><b>DJI</b><span>Closed 639 × 640 × 836 mm, open 1750 × 640 × 550 mm, 4 compartments holding at most 3 batteries, 2 charging channels, swap under 25 s, battery 172.9 × 96.02 × 67.7 mm. The battery leaves through the tail; the aircraft stays powered by the pad's wireless coil.</span></li>
+          <li class="dji"><b>DJI</b><span>Part numbering: dock items 1–14 (user manual p. 24), aircraft items (p. 10), battery LED bands (p. 71), footprint 567 × 555 mm on a 400 × 400 mm bolt pattern (installation manual p. 44).</span></li>
+          <li class="fit"><b>Fitted</b><span>The aircraft. DJI's Matrice 5TD STEP is cut off on DJI's server before any face was written, but its 95,153 vertex points survive in assembly coordinates. Fuselage sections, motor centres, battery bay, gimbal and LiDAR are fitted to them.</span></li>
+          <li class="fit"><b>Fitted</b><span>Swap layout: a rotor on an axis parallel to the aircraft, a C-shaped cage with compartments at about 10:30, 9, 7 and 5 o'clock seen from behind, a cradle with a lead screw and hook. Read from DJI's launch film (62–77 s), Drone DR1's render and KOSECO's footage of the cradle rising behind the H marker.</span></li>
+          <li class="est"><b>Estimate</b><span>Transfer radius 165 mm, rotor axis 320 mm above the ground, hook stroke 185 mm, screw pitch 8 mm, hinge positions, hump profile of the pad, the hatch plate opposite the cradle, and the split of the 25 s into 15 steps.</span></li>
+        </ul>
+      </section>
+      <section>
+        <h3>Turnaround in this clip</h3>
+        <dl class="facts">
+          <dt>Touchdown</dt><dd><span class="num">3.0 s</span></dd>
+          <dt>Cover closed</dt><dd><span class="num">9.0 s</span> (DJI: about 5 s to close)</dd>
+          <dt>Swap</dt><dd><span class="num">9.0 – 34.0 s</span>, 25.0 s</dd>
+          <dt>Take-off</dt><dd><span class="num">39.5 s</span>, 36.5 s after touchdown (DJI: under 45 s)</dd>
+        </dl>
+      </section>
+    </div>
+
+    <footer class="sources">
+      <p><b>Sources:</b> <a href="https://enterprise.dji.com/dock-4/specs" target="_blank" rel="noopener">DJI Dock 4 spec page</a>; DJI Dock 4 User Manual v1.0 (pp. 10, 24, 30, 71, 95), Installation and Setup Manual v1.0 (pp. 44, 53, 79–81), Maintenance Manual (pp. 14, 19–22); DJI Matrice 5TD 3D model v1.0 (STEP); DJI launch film "Meet DJI Dock 4"; Drone DR1 and KOSECO review footage.</p>
+      <p>Published dimensions and limits are used as-is; everything marked Estimate on the Evidence tab is reconstructed. Not affiliated with or endorsed by DJI.</p>
+      <p class="sig">Built by Claude Opus 5.5 (claude-opus-5-5) · 2026-10-16</p>
+    </footer>
+  </aside>
+</div>
+
+__MORE_HTML__
+
+<script type="importmap">
+{ "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/"
+} }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { GTAOPass } from 'three/addons/postprocessing/GTAOPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+
+const GLB_B64 = "__GLB_B64__";   // embedded (artifact, local file) or empty: then fetched from GLB_URL
+const GLB_URL = "__GLB_URL__";
+const META = __META__;
+const TL = META.timeline, FPS = TL.fps, FR = TL.frames;
+const $ = (s) => document.querySelector(s);
+const $$ = (s) => Array.from(document.querySelectorAll(s));
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const clamp01 = (x) => Math.max(0, Math.min(1, x));
+const smoother = (x) => { x = clamp01(x); return x * x * x * (x * (x * 6 - 15) + 10); };   // same easing as the Blender bake
+const cssVar = (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const store = { get(k) { try { return localStorage.getItem(k); } catch { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch {} } };
+
+// ====================================================================== swap model (mirrors blender/build.py)
+const HOOK_GRIP = META.geometry.rear_face_x_mm + 6, STROKE = META.geometry.hook_stroke_mm;
+const HOOK_KEYS = [[315, HOOK_GRIP + STROKE], [360, HOOK_GRIP], [375, HOOK_GRIP], [465, HOOK_GRIP + STROKE], [525, HOOK_GRIP + STROKE], [600, HOOK_GRIP],
+  [675, HOOK_GRIP], [750, HOOK_GRIP + STROKE], [780, HOOK_GRIP + STROKE], [870, HOOK_GRIP], [885, HOOK_GRIP], [945, HOOK_GRIP + STROKE]];
+function piece(f, keys) {
+  if (f <= keys[0][0]) return keys[0][1];
+  for (let i = 0; i < keys.length - 1; i++) {
+    const [fa, va] = keys[i], [fb, vb] = keys[i + 1];
+    if (f <= fb) return fb > fa ? va + (vb - va) * smoother((f - fa) / (fb - fa)) : vb;
+  }
+  return keys[keys.length - 1][1];
+}
+const thetaAt = (f) => piece(f, TL.theta_keys);
+const hookAt = (f) => piece(f, HOOK_KEYS);
+const placeOf = (b, f) => { let p = null; for (const [f0, pl] of TL.batteries[b].schedule) if (f >= f0) p = pl; return p; };
+const BANDS = [[92, 4, -1], [76, 3, 3], [63, 3, -1], [51, 2, 2], [38, 2, -1], [26, 1, 1], [13, 1, -1], [0, 0, 0]];
+function ledOn(level, f, charging) {
+  let [, n, flash] = BANDS.find(([lo]) => level >= lo);
+  if (charging && n < 4) flash = n;
+  const blink = Math.floor(f / 15) % 2 === 0;
+  return [0, 1, 2, 3].map((i) => i < n || (i === flash && blink));
+}
+
+// ====================================================================== renderer + pipeline
+const stage = $('#stage'), canvas = $('#view');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance' });
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.NeutralToneMapping;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFShadowMap;
+renderer.localClippingEnabled = true;
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(30, 1, 0.01, 200);
+const controls = new OrbitControls(camera, canvas);
+Object.assign(controls, { enableDamping: true, dampingFactor: 0.08, minDistance: 0.05, maxDistance: 12, maxPolarAngle: Math.PI * 0.495 });
+
+function studioEnvironment() {
+  const s = new THREE.Scene();
+  const geo = new THREE.SphereGeometry(30, 48, 24), col = [], p = geo.attributes.position;
+  for (let i = 0; i < p.count; i++) {
+    const y = p.getY(i) / 30, v = y > 0 ? 0.16 + 0.34 * Math.pow(y, 0.7) : 0.05 + 0.05 * (1 + y);
+    col.push(v, v * 1.01, v * 1.04);
+  }
+  geo.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+  s.add(new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.BackSide })));
+  const box = (w, h, pos, k, tint = 0xffffff) => {
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ color: new THREE.Color(tint).multiplyScalar(k), side: THREE.DoubleSide }));
+    m.position.set(...pos); m.lookAt(0, 0.4, 0); s.add(m);
+  };
+  box(9, 5, [-6, 9, 7], 5.5); box(2, 12, [12, 4, -2], 2.6); box(2, 12, [-12, 4, -5], 1.8, 0xdfe8ff); box(14, 14, [0, 16, 0], 1.2); box(6, 2.5, [4, 2, 13], 1.4, 0xfff0e0);
+  const pm = new THREE.PMREMGenerator(renderer), tex = pm.fromScene(s, 0.03).texture;
+  pm.dispose();
+  return tex;
+}
+scene.environment = studioEnvironment();
+scene.add(new THREE.HemisphereLight(0xffffff, 0x5c646b, 0.25));
+const sun = new THREE.DirectionalLight(0xfff6ec, 1.5);
+sun.position.set(2.4, 5.2, 3.4);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+Object.assign(sun.shadow.camera, { left: -2.4, right: 2.4, top: 2.4, bottom: -2.4, near: 0.5, far: 14 });
+sun.shadow.bias = -0.0002; sun.shadow.normalBias = 0.012; sun.shadow.radius = 4;
+scene.add(sun);
+const glow = new THREE.PointLight(0x5fe0ff, 0, 0.6, 2);
+glow.position.set(-0.075, 0.46, 0);
+scene.add(glow);
+
+const backdropCanvas = document.createElement('canvas');
+backdropCanvas.width = 16; backdropCanvas.height = 512;
+const backdrop = new THREE.CanvasTexture(backdropCanvas);
+backdrop.colorSpace = THREE.SRGBColorSpace;
+scene.background = backdrop;
+function paintBackdrop() {
+  const g = backdropCanvas.getContext('2d'), grad = g.createLinearGradient(0, 0, 0, 512);
+  grad.addColorStop(0, cssVar('--stage-top')); grad.addColorStop(0.62, cssVar('--stage-horizon')); grad.addColorStop(1, cssVar('--stage-horizon'));
+  g.fillStyle = grad; g.fillRect(0, 0, 16, 512);
+  backdrop.needsUpdate = true;
+}
+const floorAlpha = (() => {
+  const c = document.createElement('canvas'); c.width = c.height = 512;
+  const g = c.getContext('2d'), grad = g.createRadialGradient(256, 256, 0, 256, 256, 256);
+  grad.addColorStop(0, '#ffffff'); grad.addColorStop(0.18, '#bdbdbd'); grad.addColorStop(0.5, '#3a3a3a'); grad.addColorStop(1, '#000000');
+  g.fillStyle = grad; g.fillRect(0, 0, 512, 512);
+  return new THREE.CanvasTexture(c);
+})();
+const floor = new THREE.Mesh(new THREE.PlaneGeometry(14, 14), new THREE.MeshStandardMaterial({ color: 0x9aa3ab, roughness: 0.92, transparent: true, alphaMap: floorAlpha, depthWrite: false }));
+floor.rotation.x = -Math.PI / 2;
+floor.position.y = -0.2005;
+floor.receiveShadow = true;
+scene.add(floor);
+const shadowCatcher = new THREE.Mesh(new THREE.PlaneGeometry(14, 14), new THREE.ShadowMaterial({ opacity: 0.3, depthWrite: false }));
+shadowCatcher.rotation.x = -Math.PI / 2;
+shadowCatcher.position.y = -0.2;
+shadowCatcher.receiveShadow = true;
+scene.add(shadowCatcher);
+
+const target = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: 4 });
+const composer = new EffectComposer(renderer, target);
+composer.addPass(new RenderPass(scene, camera));
+const gtao = new GTAOPass(scene, camera, 1, 1);
+try { gtao.updateGtaoMaterial({ radius: 0.12, distanceExponent: 1.4, thickness: 1.0, scale: 1.0, samples: 16 }); gtao.blendIntensity = 0.75; } catch {}
+composer.addPass(gtao);
+const bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.32, 0.35, 1.8);
+composer.addPass(bloom);
+composer.addPass(new OutputPass());
+const strong = (navigator.hardwareConcurrency || 4) >= 8 && !matchMedia('(pointer: coarse)').matches;
+
+function resize() {
+  const w = stage.clientWidth, h = stage.clientHeight, pr = strong ? Math.min(window.devicePixelRatio || 1, 2) : 1;
+  renderer.setPixelRatio(pr); renderer.setSize(w, h, false);
+  composer.setPixelRatio(pr); composer.setSize(w, h);
+  camera.aspect = w / Math.max(h, 1); camera.updateProjectionMatrix();
+}
+new ResizeObserver(resize).observe(stage);
+
+// ====================================================================== state
+let root, aircraft, mixer, duration = FR.end / FPS, t = 0, playing = !reduced, speed = 1, flight = null, selected = null;
+let mode = 'xray', axis = 'side', cutMM = { side: -30, rear: 60 }, view = 'three';
+const pins = [], groups = { shell: [], internal: [], frame: [], cage: [], decal: [], acdetail: [], mech: [], battery: [], glow: [] };
+const edges = [], coverNodes = [], batt = {};
+const v3 = new THREE.Vector3(), v3b = new THREE.Vector3();
+// three.js frame: X as in Blender (+X = tail and swap module), Y up, Z = -Blender Y (+Z = cabinet face)
+const VIEWS = {
+  three: { p: [2.05, 1.38, 1.95], t: [0.02, 0.38, 0.0], fov: 30 },
+  rear: { p: [2.35, 0.72, 0.34], t: [0.0, 0.38, 0.05], fov: 30 },
+  side: { p: [0.06, 0.62, 2.25], t: [0.02, 0.40, 0.0], fov: 30 },
+  top: { p: [0.0, 3.4, 0.0001], t: [0.0, 0.3, 0.0], fov: 30 },
+  bay: { p: [-0.125, 0.493, 0.0], t: [0.3, 0.474, 0.0], fov: 74 },
+};
+const PLANE = new THREE.Plane(new THREE.Vector3(0, 0, -1), 0);
+const CLIP = [PLANE];
+
+// ====================================================================== load
+function b64(b) { const bin = atob(b); const u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return u.buffer; }
+function classOf(o) {
+  const n = (o.name && !/^(mesh|Mesh)/.test(o.name) ? o.name : '') || (o.parent ? o.parent.name : '');
+  const name = /^(Dock|Lid|Swap|Batt|M5TD|Site)_/.test(n) ? n : (o.parent ? o.parent.name : n);
+  if (/^Batt_/.test(name)) return 'battery';
+  if (/^Swap_CompartmentCage/.test(name)) return 'cage';
+  if (/^Swap_/.test(name)) return 'mech';
+  if (/^M5TD_(Prop|Lenses|FrontLEDs|VisionSensors|LiDARWindow|RearVent)/.test(name)) return 'acdetail';
+  if (/^M5TD_/.test(name)) return 'frame';
+  if (/^Dock_(AirConditioner|PowerUnit|CabinetInterior)/.test(name)) return 'internal';
+  if (/^Dock_Charge/.test(name)) return 'glow';
+  if (/^Dock_(PositioningMarkers|OrientationMarkings|StatusIndicator|HPlate)/.test(name)) return 'decal';
+  return 'shell';
+}
+const MODE = {           // opacity per class; null = untouched
+  solid: { shell: 1, internal: 1, frame: 1, cage: 1, decal: 1, acdetail: 1 },
+  xray: { shell: 0.09, internal: 0.2, frame: 0.32, cage: 0.55, decal: 0.35, acdetail: 0.55 },
+  cut: { shell: 1, internal: 1, frame: 1, cage: 1, decal: 1, acdetail: 1 },
+};
+const CLIPPED = new Set(['shell', 'internal', 'frame', 'cage', 'decal']);
+const owned = new Map();     // class -> Map(original material -> clone)
+
+async function load() {
+  const buf = GLB_B64 ? b64(GLB_B64) : await fetch(GLB_URL).then((r) => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.arrayBuffer(); });
+  const gltf = await new GLTFLoader().parseAsync(buf, '');
+  root = gltf.scene;
+  scene.add(root);
+  aircraft = root.getObjectByName('M5TD');
+  for (const n of ['Lid_Front', 'Lid_Rear']) { const o = root.getObjectByName(n); if (o) coverNodes.push(o); }
+  root.traverse((o) => {
+    if (!o.isMesh) return;
+    o.castShadow = true; o.receiveShadow = true;
+    const cls = classOf(o);
+    if (!owned.has(cls)) owned.set(cls, new Map());
+    const map = owned.get(cls), mats = Array.isArray(o.material) ? o.material : [o.material];
+    const out = mats.map((m) => {
+      if (!map.has(m)) { const c = m.clone(); c.userData.base = { transparent: c.transparent, opacity: c.opacity }; map.set(m, c); }
+      return map.get(m);
+    });
+    o.material = Array.isArray(o.material) ? out : out[0];
+    groups[cls].push(o);
+    if ((cls === 'shell' || cls === 'frame') && o.geometry) {
+      const e = new THREE.LineSegments(new THREE.EdgesGeometry(o.geometry, 32), new THREE.LineBasicMaterial({ color: cssVar('--edge'), transparent: true, opacity: 0.32, depthWrite: false }));
+      e.userData.noOcclude = true;
+      e.renderOrder = 3;
+      e.raycast = () => {};
+      o.add(e);
+      edges.push(e);
+    }
+  });
+  for (const b of Object.keys(TL.batteries)) {
+    const o = root.getObjectByName('Batt_' + b);
+    if (!o) continue;
+    const mats = new Set();
+    o.traverse((m) => { if (m.isMesh && !/LED/.test(m.name)) (Array.isArray(m.material) ? m.material : [m.material]).forEach((x) => mats.add(x)); });
+    // each battery gets its own shell material so the carried one can be tinted
+    const shell = [...mats].find((m) => /Batt_Shell/.test(m.name));
+    const own = shell ? shell.clone() : null;
+    if (own) o.traverse((m) => { if (m.isMesh && m.material === shell) m.material = own; if (m.isMesh && Array.isArray(m.material)) m.material = m.material.map((x) => (x === shell ? own : x)); });
+    batt[b] = { obj: o, mat: own };
+  }
+  mixer = new THREE.AnimationMixer(root);
+  const clip = gltf.animations[0];
+  duration = clip.duration;
+  mixer.clipAction(clip).play();
+  $('#scrub').max = duration.toFixed(2);
+  $('#total').textContent = `${duration.toFixed(1)} s`;
+  root.traverse((o) => { if (o.userData && o.userData.hotspot) addPin(o); });
+  $$('.parts button[data-id]').forEach((b) => b.addEventListener('click', () => select(b.dataset.id, true)));
+  paintBackdrop();
+  const hashMode = location.hash.slice(1);
+  setMode(MODE[hashMode] ? hashMode : store.get('dock4-mode') || 'xray', true);
+  setView(mode === 'cut' ? (axis === 'rear' ? 'rear' : 'side') : 'three', true);
+  const deep = TL.steps.find((s) => s.key === location.hash.slice(1));
+  if (deep) { setPlaying(false); t = deep.f0 / FPS + 0.05; }
+  else if (MODE[hashMode]) { setPlaying(false); t = 540 / FPS; }
+  else if (reduced) t = 420 / FPS;
+  setTime(t);
+  $('#loading').hidden = true;
+  renderer.setAnimationLoop(tick);
+}
+
+// ====================================================================== display modes
+function applyMaterials() {
+  const op = MODE[mode];
+  for (const [cls, map] of owned) {
+    const k = op[cls];
+    for (const m of map.values()) {
+      const base = m.userData.base;
+      const transparent = k == null ? base.transparent : k < 1 || base.transparent;
+      if (m.transparent !== transparent) { m.transparent = transparent; m.needsUpdate = true; }
+      m.opacity = k == null ? base.opacity : Math.min(base.opacity, k);
+      m.depthWrite = !(k != null && k < 0.5);
+      const clip = mode === 'cut' && CLIPPED.has(cls);
+      const want = clip ? CLIP : null;
+      if (m.clippingPlanes !== want) { m.clippingPlanes = want; m.clipShadows = clip; m.side = clip || (k != null && k < 1) ? THREE.DoubleSide : m.side; m.needsUpdate = true; }
+    }
+  }
+  for (const cls of ['shell', 'internal', 'decal']) for (const o of groups[cls]) o.castShadow = mode === 'solid';
+  for (const o of groups.frame) o.castShadow = mode !== 'xray';
+  for (const e of edges) e.visible = mode === 'xray' && $('#lyrEdges').checked;
+  gtao.enabled = mode !== 'xray' && strong;
+  $('#sectionBox').hidden = mode !== 'cut';
+  updatePlane();
+}
+function updatePlane() {
+  const mm = cutMM[axis];
+  if (axis === 'side') { PLANE.normal.set(0, 0, -1); PLANE.constant = -mm / 1000; $('#cutName').textContent = 'Cut at Y'; }
+  else { PLANE.normal.set(-1, 0, 0); PLANE.constant = mm / 1000; $('#cutName').textContent = 'Cut at X'; }
+  const r = $('#cutAxis');
+  r.min = axis === 'side' ? -320 : -150; r.max = axis === 'side' ? 120 : 320;
+  r.value = String(mm);
+  $('#cutOut').textContent = `${mm > 0 ? '+' : mm < 0 ? '−' : ''}${Math.abs(mm)} mm`;
+}
+function setMode(m, quiet) {
+  mode = MODE[m] ? m : 'xray';
+  store.set('dock4-mode', mode);
+  $$('[data-mode]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.mode === mode)));
+  if (root) applyMaterials();
+  if (!quiet && mode === 'cut' && (view === 'three' || view === 'top')) setView(axis === 'rear' ? 'rear' : 'side');
+}
+$$('[data-mode]').forEach((b) => b.addEventListener('click', () => setMode(b.dataset.mode)));
+$$('[data-axis]').forEach((b) => b.addEventListener('click', () => {
+  axis = b.dataset.axis;
+  $$('[data-axis]').forEach((x) => x.setAttribute('aria-pressed', String(x.dataset.axis === axis)));
+  updatePlane();
+  setView(axis === 'rear' ? 'rear' : 'side');
+}));
+$('#cutAxis').addEventListener('input', (e) => { cutMM[axis] = parseInt(e.target.value, 10); updatePlane(); });
+$('#lyrEdges').addEventListener('change', () => applyMaterials());
+$('#lyrCover').addEventListener('change', (e) => coverNodes.forEach((c) => { c.visible = e.target.checked; }));
+$('#lyrAircraft').addEventListener('change', (e) => { if (aircraft) aircraft.visible = e.target.checked; });
+
+// ====================================================================== timeline
+const KIND = { 'Landing': 'flight', 'Props stop': 'dock', 'Cover closing': 'dock', 'Battery swap': 'swap', 'Cover opening': 'dock', 'Spin-up': 'flight', 'Take-off': 'flight' };
+const SHORT = { 'Landing': 'Land', 'Props stop': 'Stop', 'Cover closing': 'Close', 'Battery swap': 'Battery swap · 25 s', 'Cover opening': 'Open', 'Spin-up': 'Spin', 'Take-off': 'Take-off' };
+const phases = TL.phases.map((p) => ({ ...p, a: p.f0 / FPS, b: p.f1 / FPS }));
+function buildTimeline() {
+  const el = $('#blocks');
+  for (const p of phases) {
+    const s = document.createElement('span');
+    s.className = KIND[p.label] || 'dock';
+    s.style.flex = `${p.b - p.a} 1 0`;
+    s.textContent = SHORT[p.label] || p.label;
+    s.title = p.label;
+    if (p.label === 'Battery swap') for (const st of TL.steps.slice(1)) {
+      const k = document.createElement('i'); k.className = 'tick'; k.style.left = `${((st.f0 - p.f0) / (p.f1 - p.f0)) * 100}%`; s.appendChild(k);
+    }
+    el.appendChild(s);
+    p.el = s;
+  }
+}
+function fitBlockLabels() { phases.forEach((p) => p.el && p.el.classList.toggle('tight', p.el.scrollWidth > p.el.clientWidth + 1)); }
+buildTimeline();
+new ResizeObserver(fitBlockLabels).observe($('#blocks'));
+document.fonts?.ready.then(fitBlockLabels);
+
+const stepsEl = $('#steps');
+TL.steps.forEach((s, i) => {
+  const li = document.createElement('li'), b = document.createElement('button');
+  b.type = 'button';
+  b.innerHTML = `<span class="k">${String(i + 1).padStart(2, '0')}</span><span></span><span class="t">${((s.f0 - FR.swap0) / FPS).toFixed(1)} s</span>`;
+  b.children[1].textContent = s.label;
+  b.title = s.detail;
+  b.addEventListener('click', () => { setPlaying(false); setTime(s.f0 / FPS + 0.04); });
+  li.appendChild(b); stepsEl.appendChild(li); s.btn = b;
+});
+
+const FLIGHT_TEXT = {
+  'Landing': ['Landing', 'Aircraft lands on the pad', 'Nose toward the chevron, fuselage in the channel between the two humps of the pad.'],
+  'Props stop': ['Landing', 'Propellers stop and fold', 'The motors index the blades so the cover can close over them.'],
+  'Cover closing': ['Dock cover', 'Cover closes', 'Both halves swing up and meet over the aircraft; push blocks inside centre it on the pad.'],
+  'Cover opening': ['Dock cover', 'Cover opens', 'Swap complete. The halves swing out and down into open tubs.'],
+  'Spin-up': ['Take-off', 'Propellers unfold and spin up', 'The aircraft carries the charged battery from compartment A.'],
+  'Take-off': ['Take-off', 'Aircraft takes off', 'Landing to take-off in this clip: 36.5 s (DJI: under 45 s).'],
+};
+let lastStep = null;
+function setTime(x) {
+  t = ((x % duration) + duration) % duration;
+  if (mixer) mixer.setTime(t);
+  const f = t * FPS;
+  $('#scrub').value = t.toFixed(2);
+  $('#clock').textContent = t.toFixed(1);
+  $('#playhead').style.left = `${(t / duration) * 100}%`;
+  const ph = phases.find((q) => t >= q.a && t < q.b) || phases[phases.length - 1];
+  phases.forEach((q) => q.el && q.el.classList.toggle('now', q === ph));
+  const st = TL.steps.find((s) => f >= s.f0 && f < s.f1) || null;
+  const key = st ? st.key : ph.label;
+  if (key !== lastStep) {
+    lastStep = key;
+    if (st) {
+      const i = TL.steps.indexOf(st);
+      $('#stepKicker').textContent = `Battery swap · step ${i + 1} of ${TL.steps.length}`;
+      $('#stepTitle').textContent = st.label;
+      $('#stepDetail').textContent = st.detail;
+    } else {
+      const [k, h, d] = FLIGHT_TEXT[ph.label] || [ph.label, ph.label, ''];
+      $('#stepKicker').textContent = k; $('#stepTitle').textContent = h; $('#stepDetail').textContent = d;
+    }
+    TL.steps.forEach((s) => { if (s === st) s.btn.setAttribute('aria-current', 'step'); else s.btn.removeAttribute('aria-current'); });
+  }
+  const swapT = clamp01((f - FR.swap0) / (FR.swap1 - FR.swap0)) * (FR.swap1 - FR.swap0) / FPS;
+  $('#swapFill').style.width = `${(swapT / 25) * 100}%`;
+  $('#swapClock').innerHTML = `<b>${swapT.toFixed(1)}</b> / 25.0 s swap`;
+  updateRing(f);
+}
+function setPlaying(on) {
+  playing = on;
+  $('#icoPause').toggleAttribute('hidden', !on); $('#icoPlay').toggleAttribute('hidden', on);   // SVG elements have no .hidden property
+  $('#play').setAttribute('aria-label', on ? 'Pause' : 'Play');
+}
+$('#play').addEventListener('click', () => setPlaying(!playing));
+$('#scrub').addEventListener('input', (e) => { setPlaying(false); setTime(parseFloat(e.target.value)); });
+const SPEEDS = [1, 0.5, 0.25, 2];
+$('#speed').addEventListener('click', () => { speed = SPEEDS[(SPEEDS.indexOf(speed) + 1) % SPEEDS.length]; $('#speed').textContent = (speed === 0.5 ? '½' : speed === 0.25 ? '¼' : speed) + '×'; });
+canvas.addEventListener('keydown', (e) => { if (e.code === 'Space') { e.preventDefault(); setPlaying(!playing); } });
+setPlaying(playing);
+
+// ====================================================================== transfer ring (rear view, SVG)
+const SVGNS = 'http://www.w3.org/2000/svg';
+const ring = $('#ring');
+const S = 0.42, CX = 160, CY = 182, R = META.geometry.transfer_radius_mm * S;      // 0.42 px per mm; centre = rotor axis
+const el = (tag, attrs, parent = ring) => { const e = document.createElementNS(SVGNS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); parent.appendChild(e); return e; };
+const BW = 96.02 * S, BH = 67.7 * S;
+const zy = (zmm) => CY - (zmm - META.geometry.rotor_axis_z_mm) * S;            // height above ground (mm) -> svg y
+function polar(deg, rmm) { const a = deg * Math.PI / 180; return [CX - Math.sin(a) * rmm * S, CY - Math.cos(a) * rmm * S]; }
+function buildRing() {
+  const body = el('g', {});
+  el('rect', { x: CX - 272 * S, y: zy(430), width: 544 * S, height: (430 - 69) * S, rx: 6, fill: 'none', stroke: 'var(--ring-body)', 'stroke-width': 1.5 }, body);
+  el('path', { d: `M${CX - 272 * S} ${zy(440)} H${CX - 112 * S} L${CX - 62 * S} ${zy(440)}`, fill: 'none', stroke: 'var(--ring-body)', 'stroke-width': 1.5 }, body);
+  el('path', { d: `M${CX - 272 * S} ${zy(440)} C${CX - 250 * S} ${zy(440)} ${CX - 240 * S} ${zy(550)} ${CX - 215 * S} ${zy(550)} H${CX - 112 * S} C${CX - 90 * S} ${zy(550)} ${CX - 80 * S} ${zy(440)} ${CX - 62 * S} ${zy(440)} H${CX + 62 * S} C${CX + 80 * S} ${zy(440)} ${CX + 90 * S} ${zy(550)} ${CX + 112 * S} ${zy(550)} H${CX + 215 * S} C${CX + 240 * S} ${zy(550)} ${CX + 250 * S} ${zy(440)} ${CX + 272 * S} ${zy(440)}`,
+    fill: 'none', stroke: 'var(--ink-3)', 'stroke-width': 1.5 }, body);
+  // aircraft cross-section (rear view): fuselage, rear arms rising to the motors
+  const ac = el('g', { opacity: 0.85 });
+  el('rect', { x: CX - 55 * S, y: zy(440 + 150), width: 110 * S, height: 150 * S, rx: 14, fill: 'none', stroke: 'var(--ink-3)', 'stroke-width': 1.3 }, ac);
+  for (const s of [-1, 1]) {
+    el('path', { d: `M${CX + s * 50 * S} ${zy(545)} L${CX + s * 196 * S} ${zy(612)}`, stroke: 'var(--ink-3)', 'stroke-width': 3, 'stroke-linecap': 'round' }, ac);
+    el('rect', { x: CX + s * 196 * S - 10, y: zy(650), width: 20, height: 40 * S, rx: 3, fill: 'var(--ink-3)' }, ac);
+  }
+  el('text', { x: CX, y: zy(690) - 2, 'text-anchor': 'middle', class: 'cap' }, ac).textContent = 'AIRCRAFT · BATTERY BAY';
+  // cage: C-shaped shell 30°..240°
+  const a0 = 30, a1 = 240, [x0, y0] = polar(a0, 234), [x1, y1] = polar(a1, 234);
+  el('path', { d: `M${x0} ${y0} A${234 * S} ${234 * S} 0 1 0 ${x1} ${y1}`, fill: 'none', stroke: 'var(--ring-cage)', 'stroke-width': 3, 'stroke-linecap': 'round' });
+  el('circle', { cx: CX, cy: CY, r: R, fill: 'none', stroke: 'var(--rule)', 'stroke-dasharray': '3 4' });
+  // stations: aircraft bay at 0°, compartments A-D
+  const stations = [['bay', 0], ...Object.entries(TL.compartments)];
+  for (const [name, deg] of stations) {
+    const g = el('g', { transform: `rotate(${-deg} ${CX} ${CY})` });
+    el('rect', { x: CX - BW / 2 - 3, y: CY - R - BH / 2 - 3, width: BW + 6, height: BH + 6, rx: 4, fill: 'none', stroke: name === 'bay' ? 'var(--ink-3)' : 'var(--ring-cage)', 'stroke-width': 1.2 }, g);
+    if (name !== 'bay') { const [lx, ly] = polar(deg, 268); el('text', { x: lx, y: ly + 4, 'text-anchor': 'middle', class: 'lbl' }).textContent = name; }
+  }
+  // rotor: hub, cradle (U bracket at the station radius), hatch plate opposite
+  ringParts.rotor = el('g', {});
+  el('circle', { cx: CX, cy: CY, r: 65 * S, fill: 'var(--panel-2)', stroke: 'var(--ink)', 'stroke-width': 1.5 }, ringParts.rotor);
+  el('path', { d: `M${CX} ${CY - 30 * S} V${CY - R + BH / 2 + 6}`, stroke: 'var(--ink)', 'stroke-width': 4 }, ringParts.rotor);
+  el('path', { d: `M${CX - BW / 2 - 6} ${CY - R - BH / 2 - 5} V${CY - R + BH / 2 + 6} H${CX + BW / 2 + 6} V${CY - R - BH / 2 - 5}`, fill: 'none', stroke: 'var(--accent-fill)', 'stroke-width': 3, 'stroke-linejoin': 'round' }, ringParts.rotor);
+  el('path', { d: `M${CX - 64 * S} ${CY + 120 * S} H${CX + 188 * S}`, stroke: 'var(--ink-2)', 'stroke-width': 3 }, ringParts.rotor);
+  el('path', { d: `M${CX} ${CY + 30 * S} V${CY + 120 * S}`, stroke: 'var(--ink-2)', 'stroke-width': 2 }, ringParts.rotor);
+  el('circle', { cx: CX, cy: CY, r: 4, fill: 'var(--ink)' });
+  el('text', { x: CX + 70 * S, y: CY + 4, class: 'cap' }).textContent = 'ROTOR AXIS';
+  // batteries (one group each, moved per frame)
+  for (const b of Object.keys(TL.batteries)) {
+    const g = el('g', {});
+    const body = el('g', {}, g);
+    el('rect', { x: CX - BW / 2, y: CY - R - BH / 2, width: BW, height: BH, rx: 3, fill: 'var(--panel)', stroke: 'var(--ink-2)', 'stroke-width': 1.2 }, body);
+    const cellsG = el('g', {}, body);
+    const cells = [0, 1, 2, 3].map((i) => el('rect', { x: CX - 14 + i * 7.5, y: CY - R + 5, width: 6, height: 4, rx: 1, fill: 'var(--cell-off)' }, cellsG));
+    const label = el('text', { x: 0, y: 0, 'text-anchor': 'middle', class: 'id' }, g);
+    ringParts.batt[b] = { g, body, cells, label };
+  }
+  el('text', { x: 4, y: 296, class: 'cap' }).textContent = '← CABINET SIDE (−Y)';
+}
+const ringParts = { rotor: null, batt: {} };
+buildRing();
+
+const slotRows = $('#slotRows'), rows = {};
+for (const b of Object.keys(TL.batteries)) {
+  const tr = document.createElement('tr');
+  tr.innerHTML = `<td class="id">${b}</td><td class="where"></td><td><span class="cells"><i></i><i></i><i></i><i></i></span><span class="lvl"></span></td><td><span class="chip"></span></td>`;
+  slotRows.appendChild(tr);
+  rows[b] = { tr, where: tr.children[1], cells: [...tr.querySelectorAll('.cells i')], lvl: tr.querySelector('.lvl'), chip: tr.querySelector('.chip') };
+}
+const WHERE = { ac: 'Aircraft', cradle: 'Cradle', A: 'Compartment A', B: 'Compartment B', C: 'Compartment C', D: 'Compartment D' };
+function updateRing(f) {
+  const th = thetaAt(f), hook = hookAt(f);
+  ringParts.rotor.setAttribute('transform', `rotate(${-th} ${CX} ${CY})`);
+  $('#screwFill').style.width = `${((HOOK_GRIP + STROKE - hook) / STROKE) * 100}%`;
+  $('#screwOut').textContent = `${Math.round(HOOK_GRIP + STROKE - hook)} / ${STROKE} mm`;
+  const airborne = f < FR.land1 || f > FR.up0;
+  for (const [b, cfg] of Object.entries(TL.batteries)) {
+    const pl = placeOf(b, f), charging = cfg.charge_from != null && f >= cfg.charge_from;
+    const deg = pl === 'ac' ? 0 : pl === 'cradle' ? th : TL.compartments[pl];
+    const p = ringParts.batt[b];
+    // a battery being pulled sits behind the ring plane: draw it smaller as it travels along X
+    const out = pl === 'cradle' ? clamp01((hook - HOOK_GRIP) / STROKE) : 0;
+    const k = 1 - 0.18 * out;
+    p.body.setAttribute('transform', `rotate(${-deg} ${CX} ${CY}) translate(${CX} ${CY - R}) scale(${k}) translate(${-CX} ${-(CY - R)})`);
+    p.g.style.display = pl === 'ac' && airborne ? 'none' : '';
+    p.body.querySelector('rect').setAttribute('stroke', pl === 'cradle' ? 'var(--accent-fill)' : 'var(--ink-2)');
+    const on = ledOn(cfg.level, f, charging);
+    p.cells.forEach((c, i) => c.setAttribute('fill', on[i] ? 'var(--cell)' : 'var(--cell-off)'));
+    const [lx, ly] = polar(deg, 165);
+    p.label.setAttribute('x', lx); p.label.setAttribute('y', ly - 3);
+    p.label.textContent = b;
+    const r = rows[b];
+    r.where.textContent = WHERE[pl] + (pl === 'ac' && airborne ? ' (in flight)' : '');
+    r.cells.forEach((c, i) => c.classList.toggle('on', on[i]));
+    r.lvl.textContent = `${cfg.level} %`;
+    const st = pl === 'cradle' ? ['move', 'Moving'] : charging ? ['charge', 'Charging'] : pl === 'ac' ? ['', 'In aircraft'] : ['', 'Ready'];
+    r.chip.className = 'chip ' + st[0]; r.chip.textContent = st[1];
+    r.tr.classList.toggle('moving', pl === 'cradle');
+    const bo = batt[b];
+    if (bo && bo.mat) { bo.mat.emissive.set(cssVar('--accent-fill')); bo.mat.emissiveIntensity = pl === 'cradle' ? 0.35 : 0; }
+  }
+}
+
+// ====================================================================== callouts
+const pinsEl = $('#pins');
+const tag = document.createElement('div');
+tag.className = 'tag'; tag.hidden = true;
+pinsEl.appendChild(tag);
+function addPin(obj) {
+  const id = String(obj.userData.hotspot), label = obj.userData.label || id, group = obj.userData.group || 'dock';
+  const e = document.createElement('button');
+  e.type = 'button'; e.className = 'pin' + (id.length > 2 ? ' wide' : ''); e.textContent = id;
+  e.setAttribute('aria-label', `${id}: ${label}`); e.setAttribute('aria-pressed', 'false'); e.title = label;
+  e.addEventListener('click', () => select(id, true));
+  pinsEl.appendChild(e);
+  pins.push({ obj, id, label, group, el: e });
+}
+function select(id, fly) {
+  selected = id || null;
+  for (const p of pins) p.el.setAttribute('aria-pressed', String(p.id === selected));
+  $$('.parts button[data-id]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.id === selected)));
+  const p = pins.find((q) => q.id === selected);
+  if (!p) { tag.hidden = true; return; }
+  tag.innerHTML = '<b></b><span></span>';
+  tag.querySelector('b').textContent = p.id; tag.querySelector('span').textContent = p.label;
+  if (p.group === 'aircraft' && !$('#lyrAircraft').checked) { $('#lyrAircraft').checked = true; aircraft.visible = true; }
+  if (!$('#lyrPins').checked) $('#lyrPins').checked = true;
+  if (fly) {
+    p.obj.getWorldPosition(v3);
+    const dir = camera.position.clone().sub(controls.target).normalize();
+    if (dir.y < 0.15) dir.y = 0.35;
+    flyTo(v3.clone().addScaledVector(dir.normalize(), 0.9), v3.clone(), 30);
+    markView(null);
+  }
+}
+const raycaster = new THREE.Raycaster();
+const shown = (o) => { for (let x = o; x; x = x.parent) if (!x.visible) return false; return true; };
+let lastOcc = 0;
+function updatePins(now) {
+  const on = $('#lyrPins').checked;
+  pinsEl.hidden = !on;
+  if (!on) return;
+  const w = stage.clientWidth, h = stage.clientHeight, f = t * FPS;
+  const enclosed = f > FR.close0 + 75 && f < FR.open0 + 45 && $('#lyrCover').checked;      // aircraft hidden under the closed cover
+  const doOcc = mode === 'solid' && now - lastOcc > 250;
+  if (doOcc) lastOcc = now;
+  for (const p of pins) {
+    p.obj.getWorldPosition(v3);
+    v3b.copy(v3).project(camera);
+    // solid mode labels the outside; X-ray and cut-away label the swap module and the battery
+    const inMode = p.id === selected || (mode === 'solid' ? p.group !== 'swap' : p.group === 'swap' || p.id === 'A14');
+    const hiddenGroup = !inMode || (p.group === 'aircraft' && (!aircraft.visible || (mode === 'solid' && enclosed && p.id !== selected)))
+      || (/^Lid_/.test(p.obj.parent?.name || '') && !$('#lyrCover').checked);
+    const vis = !hiddenGroup && v3b.z < 1 && Math.abs(v3b.x) < 1.02 && Math.abs(v3b.y) < 1.02 && view !== 'bay';
+    p.el.hidden = !vis;
+    if (!vis) continue;
+    const x = (v3b.x * 0.5 + 0.5) * w, y = (-v3b.y * 0.5 + 0.5) * h;
+    p.el.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px)`;
+    if (doOcc) {
+      const dir = v3.clone().sub(camera.position), dist = dir.length();
+      raycaster.set(camera.position, dir.normalize());
+      raycaster.far = Math.max(0, dist - 0.02);
+      p.occ = raycaster.intersectObject(root, true).some((i) => i.object.isMesh && shown(i.object));
+    }
+    if (mode !== 'solid') p.occ = false;
+    p.el.style.opacity = p.occ && p.id !== selected ? '0' : '';
+    p.el.style.pointerEvents = p.occ && p.id !== selected ? 'none' : '';
+    if (p.id === selected) tag.style.transform = `translate(${(x + 18).toFixed(1)}px, ${(y - 15).toFixed(1)}px)`;
+  }
+  const sp = pins.find((q) => q.id === selected);
+  tag.hidden = !sp || sp.el.hidden;
+}
+
+// ====================================================================== views
+function markView(name) { $$('[data-view]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.view === name))); }
+function flyTo(pos, tgt, fov) {
+  if (reduced) { camera.position.copy(pos); controls.target.copy(tgt); camera.fov = fov; camera.updateProjectionMatrix(); controls.update(); return; }
+  flight = { p0: camera.position.clone(), t0: controls.target.clone(), f0: camera.fov, p1: pos, t1: tgt, f1: fov, start: performance.now(), dur: 850 };
+}
+function setView(name, instant) {
+  view = name;
+  markView(name);
+  const v = VIEWS[name] || VIEWS.three;
+  const pos = new THREE.Vector3(...v.p), tgt = new THREE.Vector3(...v.t);
+  controls.minDistance = name === 'bay' ? 0.01 : 0.05;
+  if (instant) { camera.position.copy(pos); controls.target.copy(tgt); camera.fov = v.fov; camera.updateProjectionMatrix(); controls.update(); }
+  else flyTo(pos, tgt, v.fov);
+  if (name === 'bay' && !$('#lyrAircraft').checked) { $('#lyrAircraft').checked = true; aircraft.visible = true; }
+}
+$$('[data-view]').forEach((b) => b.addEventListener('click', () => setView(b.dataset.view)));
+controls.addEventListener('start', () => { flight = null; if (view !== 'bay') { view = 'free'; markView(null); } });
+
+// ====================================================================== tabs
+const TABS = ['Swap', 'Model', 'Notes'];
+function showTab(name) {
+  for (const n of TABS) { $('#tab' + n).setAttribute('aria-selected', String(n === name)); $('#panel' + n).hidden = n !== name; }
+  store.set('dock4-tab', name);
+}
+TABS.forEach((n) => $('#tab' + n).addEventListener('click', () => showTab(n)));
+$('.tabs').addEventListener('keydown', (e) => {
+  if (!['ArrowLeft', 'ArrowRight'].includes(e.key)) return;
+  const i = TABS.findIndex((n) => $('#tab' + n).getAttribute('aria-selected') === 'true');
+  const n = TABS[(i + (e.key === 'ArrowRight' ? 1 : TABS.length - 1)) % TABS.length];
+  showTab(n); $('#tab' + n).focus();
+});
+if (TABS.includes(store.get('dock4-tab'))) showTab(store.get('dock4-tab'));
+
+// ====================================================================== per-frame
+const STATUS = { white: [1, 1, 1], red: [1, 0.08, 0.04], green: [0.15, 1, 0.3], off: [0.2, 0.22, 0.24] };
+let statusMats = null;
+function applyDynamics(now) {
+  const f = t * FPS, blink = Math.floor(now / 500) % 2 === 0;
+  if (!statusMats) { statusMats = []; for (const o of groups.decal) if (/StatusIndicator/.test(o.name)) statusMats.push(o.material); }
+  const moving = (f >= FR.close0 && f < FR.close1) || (f >= FR.open0 && f < FR.open1) || f < FR.stop1 || f >= FR.spin0;
+  const col = moving ? (blink ? 'red' : 'off') : (blink ? 'white' : 'off');
+  for (const m of statusMats) { m.emissive.setRGB(...STATUS[col]); m.emissiveIntensity = col === 'off' ? 0.05 : 2.2; m.color.setRGB(...(col === 'off' ? STATUS.off : STATUS[col])); }
+  const closed = f >= FR.close1 && f < FR.open0;
+  glow.intensity = closed ? 0.12 + 0.05 * Math.sin(now / 160) : 0;
+}
+
+const clock = new THREE.Clock();
+const ease = (x) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+function tick() {
+  const dt = Math.min(clock.getDelta(), 0.1), now = performance.now();
+  if (playing) setTime(t + dt * speed);
+  if (flight) {
+    const k = Math.min(1, (now - flight.start) / flight.dur), e = ease(k);
+    camera.position.lerpVectors(flight.p0, flight.p1, e);
+    controls.target.lerpVectors(flight.t0, flight.t1, e);
+    camera.fov = flight.f0 + (flight.f1 - flight.f0) * e; camera.updateProjectionMatrix();
+    if (k >= 1) flight = null;
+  }
+  controls.update();
+  applyDynamics(now);
+  updatePins(now);
+  composer.render(dt);
+}
+
+new MutationObserver(() => { paintBackdrop(); for (const e of edges) e.material.color.set(cssVar('--edge')); }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { paintBackdrop(); for (const e of edges) e.material.color.set(cssVar('--edge')); });
+resize();
+load().catch((err) => { $('#loading').textContent = `The model didn't load: ${err.message}. Reload the page to try again.`; console.error(err); });
+window.dock4 = { jump(frame, m) { if (m) setMode(m); setTime(frame / FPS); setPlaying(true); } };
+</script>
+<script>
+__MORE_JS__
+</script>

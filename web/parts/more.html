@@ -1,0 +1,117 @@
+<main class="more">
+  <section class="band" id="scenarios" aria-labelledby="scenTitle">
+    <header class="band-head">
+      <span class="kicker">01 · Scenarios</span>
+      <h2 id="scenTitle">Operating scenarios for Dock 4</h2>
+      <p>DJI names six uses for Dock 4: first response, infrastructure inspection, overnight security, surveying, rescue and remote sites. In each one, the battery swap replaces a recharge between flights. The bars show airborne minutes per hour for a typical flight in each scenario, computed from DJI's charge and flight times (method in section 02).</p>
+    </header>
+    <div class="scen" id="scen"></div>
+  </section>
+
+  <section class="band" id="generations" aria-labelledby="genTitle">
+    <header class="band-head">
+      <span class="kicker">02 · Generations</span>
+      <h2 id="genTitle">Dock 2, Dock 3 and Dock 4 compared</h2>
+      <p>Figures from DJI's spec sheets for each dock and its aircraft. The change that matters most between flights is the last row of the dock block: Dock 2 and Dock 3 recharge the battery inside the aircraft, while Dock 4 replaces it.</p>
+    </header>
+    <div class="gen-grid">
+      <div>
+        <div class="tablebox">
+          <table class="gens">
+            <thead><tr><th scope="col"><span hidden>Item</span></th>
+              <th scope="col">Dock 2<small>Matrice 3D / 3TD</small></th>
+              <th scope="col">Dock 3<small>Matrice 4D / 4TD</small></th>
+              <th scope="col">Dock 4<small>Matrice 5TD</small></th></tr></thead>
+            <tbody>
+              <tr class="grp"><th scope="rowgroup" colspan="4">Dock</th></tr>
+              <tr><th scope="row">Between flights</th><td>Recharge 32 min (20 → 90 %)</td><td>Recharge 27 min (15 → 95 %)</td><td class="d4">Battery swap &lt; 25 s; landing to take-off &lt; 45 s<span class="up">new</span></td></tr>
+              <tr><th scope="row">Batteries at the dock</th><td>1, in the aircraft</td><td>1, in the aircraft</td><td class="d4">4: one in the aircraft, 3 in 4 compartments; 2 charging channels</td></tr>
+              <tr><th scope="row">Weight</th><td>34 kg</td><td>55 kg</td><td class="d4">66 kg (without batteries)</td></tr>
+              <tr><th scope="row">Closed size, L × W × H</th><td>570 × 583 × 465 mm</td><td>640 × 745 × 770 mm¹</td><td class="d4">639 × 640 × 836 mm¹</td></tr>
+              <tr><th scope="row">Operating temperature</th><td>−25 to 45 °C</td><td>−30 to 50 °C</td><td class="d4">−40 to 50 °C</td></tr>
+              <tr><th scope="row">Ingress protection</th><td>IP55</td><td>IP56</td><td class="d4">IP56</td></tr>
+              <tr><th scope="row">Max landing wind</th><td>8 m/s</td><td>12 m/s</td><td class="d4">12 m/s</td></tr>
+              <tr><th scope="row">Backup power</th><td>12 Ah battery, &gt; 5 h</td><td>12 Ah battery</td><td class="d4">A flight battery in a compartment</td></tr>
+              <tr class="grp"><th scope="rowgroup" colspan="4">Aircraft</th></tr>
+              <tr><th scope="row">Weight / max take-off</th><td>1410 / 1610 g</td><td>1850 / 2090 g</td><td class="d4">2600 / 3050 g</td></tr>
+              <tr><th scope="row">Max flight / hover time</th><td>50 / 40 min</td><td>54 / 47 min</td><td class="d4">59 / 55 min</td></tr>
+              <tr><th scope="row">Operating radius</th><td>10 km</td><td>10 km</td><td class="d4">10 km</td></tr>
+              <tr><th scope="row">Operating temperature</th><td>−20 to 45 °C</td><td>−20 to 50 °C</td><td class="d4">−40 to 50 °C</td></tr>
+              <tr><th scope="row">Ingress protection</th><td>IP54</td><td>IP55</td><td class="d4">IP55</td></tr>
+              <tr><th scope="row">Thermal camera, normal / UHR</th><td>640 × 512 / 1280 × 1024</td><td>640 × 512 / 1280 × 1024</td><td class="d4">1280 × 1024 / 2560 × 2048</td></tr>
+              <tr><th scope="row">Obstacle sensing</th><td>Vision, six directions</td><td>Omnidirectional vision, downward 3D infrared</td><td class="d4">Omnidirectional vision, rotating LiDAR, downward 3D infrared, mmWave radar forward, up and down</td></tr>
+              <tr><th scope="row">Accessories</th><td>—</td><td>—</td><td class="d4">Up to 450 g: spotlight, speaker, parachute</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="srcs">¹ Includes the 145 mm wind speed gauge and the mounting brackets (58 mm on Dock 3, 69 mm on Dock 4); Dock 3 also includes its 160 mm RTK module. On Dock 4 the RTK base station is in the separate O4 Ground Station. — means not given in the spec data used.</p>
+      </div>
+      <div class="calc">
+        <h3>Airborne minutes per hour <small>by flight length</small></h3>
+        <div class="ctlrow"><label for="flightLen">Length of each flight</label><output id="flightOut" for="flightLen">20 min</output>
+          <input type="range" id="flightLen" min="5" max="44" step="1" value="20"></div>
+        <svg id="dutyChart" viewBox="0 0 420 250" role="img" aria-label="Airborne minutes per hour against flight length for Dock 2, Dock 3 and Dock 4"></svg>
+        <div class="readout3" id="dutyOut"></div>
+        <p class="note" style="margin:0">Model: battery use at the hover rate (100 % ÷ max hover time per minute) inside each dock's charge window. Dock 2 and Dock 3 recharge the used energy at DJI's published rate, plus 20 s for landing and the cover. Dock 4 spends 45 s on the ground; its two channels recharge a used battery before it is needed again, at every flight length shown. Wind, cold and payload shorten real flights.</p>
+      </div>
+    </div>
+    <div class="gen-notes" id="genNotes"></div>
+  </section>
+
+  <section class="band" id="screens" aria-labelledby="scrTitle">
+    <header class="band-head">
+      <span class="kicker">03 · Sample data</span>
+      <h2 id="scrTitle">One day at a Dock 4 site, sample data</h2>
+      <p>A simulated 24 hours at one dock: night patrols, emergency dispatches and two inspection flights, with a wind front in the afternoon. The batteries, swaps, holds and charging follow the dock's published limits. Every value on these screens is generated for this page; it is not a recording and not DJI software.</p>
+    </header>
+    <div class="console" id="console">
+      <nav class="side" role="tablist" aria-label="Operator screens">
+        <span class="brand">Dock site · sample</span>
+        <button type="button" role="tab" id="scrDock" aria-selected="true" aria-controls="paneDock">Dock status</button>
+        <button type="button" role="tab" id="scrFlights" aria-selected="false" aria-controls="paneFlights">Flight log</button>
+        <button type="button" role="tab" id="scrWeather" aria-selected="false" aria-controls="paneWeather">Weather</button>
+        <button type="button" role="tab" id="scrLive" aria-selected="false" aria-controls="paneLive">Live view</button>
+        <span class="sample">SAMPLE DATA · generated for this page, not a recording</span>
+      </nav>
+      <div class="main">
+        <div class="clockbar">
+          <div class="now"><span id="simClock">14:22</span><small>sample day</small></div>
+          <input type="range" id="simTime" min="0" max="1439" step="1" value="884" aria-label="Time of the sample day">
+          <span class="state" id="simState">On pad</span>
+        </div>
+        <div class="pane" id="paneDock" role="tabpanel" aria-labelledby="scrDock">
+          <h4>Aircraft and compartments <small id="dockSub">two charging channels</small></h4>
+          <div class="tiles" id="tiles"></div>
+          <div class="kv" id="dockKv"></div>
+          <div style="margin-top:14px;display:flex;flex-wrap:wrap;gap:10px;align-items:center">
+            <button type="button" class="jump" id="jumpSwap">Watch the swap in 3D</button>
+            <span style="font:500 12px/1.4 var(--mono);color:var(--screen-dim)" id="nextTask"></span>
+          </div>
+        </div>
+        <div class="pane" id="paneFlights" role="tabpanel" aria-labelledby="scrFlights" hidden>
+          <h4>Flights and battery levels <small id="flightSum"></small></h4>
+          <div class="chips" id="typeChips"></div>
+          <div class="chartbox"><svg id="dayChart" viewBox="0 0 900 250" role="img" aria-label="Flights over the sample day and the charge level of each battery"></svg></div>
+          <div class="logbox"><table class="log"><thead><tr><th>Launch</th><th>Task</th><th>Flight</th><th>Battery</th><th>After landing</th><th>Note</th></tr></thead><tbody id="logRows"></tbody></table></div>
+        </div>
+        <div class="pane" id="paneWeather" role="tabpanel" aria-labelledby="scrWeather" hidden>
+          <h4>Dock sensors <small>wind, rain, ambient and cabin temperature</small></h4>
+          <div class="chartbox"><svg id="wxChart" viewBox="0 0 900 300" role="img" aria-label="Wind speed, rainfall and temperatures over the sample day"></svg></div>
+          <div class="kv" id="wxKv"></div>
+        </div>
+        <div class="pane" id="paneLive" role="tabpanel" aria-labelledby="scrLive" hidden>
+          <h4>Gimbal camera <small>simulated view, 1280 × 720 canvas</small></h4>
+          <div class="live"><canvas id="liveCanvas" width="1280" height="720"></canvas>
+            <div class="osd"><div class="tl" id="osdTL"></div><div class="tr" id="osdTR"></div><div class="bl" id="osdBL"></div><div class="br"><span class="sim">SIMULATED</span></div></div></div>
+          <div class="livectl">
+            <span class="seg2" role="group" aria-label="Camera"><button type="button" data-cam="wide" aria-pressed="false">Wide</button><button type="button" data-cam="ir" aria-pressed="true">Thermal</button><button type="button" data-cam="fuse" aria-pressed="false">Fusion</button></span>
+            <label for="liveZoom">Zoom <input type="range" id="liveZoom" min="1" max="8" step="0.1" value="1.6"> <span id="liveZoomOut">1.6×</span></label>
+            <label for="liveAI"><input type="checkbox" id="liveAI" checked> AI detection</label>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="screens-note">The screens are a generic layout made for this page. Behaviour follows DJI's published rules where they exist: no take-off above 12 m/s wind, a swap only when the aircraft is below 90 % and a stored battery is above 90 %, two batteries charging at 27 min from 15 to 95 %, at most three batteries in the compartments. Consumption, flight lengths, the weather and the scene in the camera view are invented.</p>
+    <p class="srcs">Sources: <a href="https://enterprise.dji.com/dock-4/specs" target="_blank" rel="noopener">DJI Dock 4 specs</a> · <a href="https://www.dji.com/media-center/announcements/dji-release-dock-4" target="_blank" rel="noopener">DJI Dock 4 announcement</a> · <a href="https://enterprise.dji.com/dock-3/specs" target="_blank" rel="noopener">DJI Dock 3 specs</a> · <a href="https://enterprise.dji.com/dock-2/specs" target="_blank" rel="noopener">DJI Dock 2 specs</a> · DJI Dock 4 User Manual v1.0 (swap rule p. 70, battery LEDs p. 71).</p>
+  </section>
+</main>

@@ -1,0 +1,562 @@
+{
+  "spec": {
+    "closed_mm": [
+      639,
+      640,
+      836
+    ],
+    "open_mm": [
+      1750,
+      640,
+      550
+    ],
+    "gauge_mm": 145,
+    "bracket_mm": 69,
+    "footprint_mm": [
+      567,
+      555
+    ],
+    "mount_holes_mm": [
+      400,
+      400
+    ],
+    "weight_kg": 66,
+    "ip": "IP56",
+    "temperature_c": [
+      -40,
+      50
+    ],
+    "aircraft_mm": [
+      392.5,
+      416.2,
+      230.8
+    ],
+    "aircraft_mm_spec_page": [
+      393,
+      477,
+      230
+    ],
+    "wheelbase_mm": 549,
+    "propeller": "1564F (15 in)",
+    "aircraft_g": 2600,
+    "mtow_g": 3050,
+    "battery_mm": [
+      172.9,
+      96.02,
+      67.7
+    ],
+    "battery": {
+      "model": "BPX340-12138-21.42",
+      "g": 925,
+      "wh": 260,
+      "v": 21.42
+    },
+    "swap_s": 25,
+    "turnaround_s": 45,
+    "compartments": 4,
+    "max_stored": 3,
+    "charging": {
+      "channels": 2,
+      "minutes": 27,
+      "from_pct": 15,
+      "to_pct": 95
+    }
+  },
+  "validation": {
+    "closed": {
+      "model_mm": [
+        639.0,
+        640.0,
+        836.0
+      ],
+      "spec_mm": [
+        639,
+        640,
+        836
+      ],
+      "ok": true
+    },
+    "open": {
+      "model_mm": [
+        1750.0,
+        640.0,
+        550.0
+      ],
+      "spec_mm": [
+        1750,
+        640,
+        550
+      ],
+      "ok": true
+    },
+    "aircraft": {
+      "model_mm": [
+        395.0,
+        474.0,
+        230.9
+      ],
+      "spec_mm": [
+        392.5,
+        416.2,
+        230.8
+      ],
+      "spec_page_mm": [
+        393,
+        477,
+        230
+      ],
+      "source": "fitted to DJI's STEP vertex points",
+      "ok": true
+    },
+    "wheelbase_mm": {
+      "model": 533.5,
+      "spec": 549
+    },
+    "clearances_mm": {
+      "aircraft_to_roof": 8.2
+    }
+  },
+  "timeline": {
+    "fps": 30,
+    "frames": {
+      "land0": 0,
+      "land1": 90,
+      "stop0": 90,
+      "stop1": 120,
+      "close0": 120,
+      "close1": 270,
+      "swap0": 270,
+      "swap1": 1020,
+      "open0": 1020,
+      "open1": 1140,
+      "spin0": 1140,
+      "spin1": 1185,
+      "up0": 1185,
+      "end": 1320
+    },
+    "markers": {
+      "Landing": 0,
+      "Cover closing": 120,
+      "Swap": 270,
+      "Cover opening": 1020,
+      "Take-off": 1185,
+      "End": 1320
+    },
+    "phases": [
+      {
+        "label": "Landing",
+        "f0": 0,
+        "f1": 90
+      },
+      {
+        "label": "Props stop",
+        "f0": 90,
+        "f1": 120
+      },
+      {
+        "label": "Cover closing",
+        "f0": 120,
+        "f1": 270
+      },
+      {
+        "label": "Battery swap",
+        "f0": 270,
+        "f1": 1020
+      },
+      {
+        "label": "Cover opening",
+        "f0": 1020,
+        "f1": 1140
+      },
+      {
+        "label": "Spin-up",
+        "f0": 1140,
+        "f1": 1185
+      },
+      {
+        "label": "Take-off",
+        "f0": 1185,
+        "f1": 1320
+      }
+    ],
+    "steps": [
+      {
+        "key": "raise",
+        "f0": 270,
+        "f1": 315,
+        "label": "Cradle turns up",
+        "detail": "The rotor turns the empty cradle 180\u00b0 to 12 o'clock, through the pad hatch, behind the tail."
+      },
+      {
+        "key": "reach",
+        "f0": 315,
+        "f1": 360,
+        "label": "Hook moves forward",
+        "detail": "The lead screw drives the hook 185 mm forward (\u2212X) to the handle on the battery's rear face."
+      },
+      {
+        "key": "grip",
+        "f0": 360,
+        "f1": 375,
+        "label": "Hook engages",
+        "detail": "The hook rises 8 mm into the handle and releases the battery latch."
+      },
+      {
+        "key": "pull",
+        "f0": 375,
+        "f1": 465,
+        "label": "Battery pulled out",
+        "detail": "The battery slides 185 mm out of the tail into the cradle. The pad's wireless coil keeps the aircraft powered."
+      },
+      {
+        "key": "turn_store",
+        "f0": 465,
+        "f1": 525,
+        "label": "Turn to free compartment",
+        "detail": "The rotor carries the battery from 12 o'clock to compartment C (145\u00b0)."
+      },
+      {
+        "key": "store",
+        "f0": 525,
+        "f1": 600,
+        "label": "Battery stored",
+        "detail": "The hook pushes the battery into compartment C until its contacts mate; charging channel 1 starts."
+      },
+      {
+        "key": "release",
+        "f0": 600,
+        "f1": 615,
+        "label": "Hook releases",
+        "detail": "The hook drops out of the handle."
+      },
+      {
+        "key": "turn_fetch",
+        "f0": 615,
+        "f1": 660,
+        "label": "Turn to charged battery",
+        "detail": "The empty cradle turns to compartment A (45\u00b0), which holds the fullest battery."
+      },
+      {
+        "key": "fetch_grip",
+        "f0": 660,
+        "f1": 675,
+        "label": "Hook engages",
+        "detail": "The hook rises into the handle of the charged battery."
+      },
+      {
+        "key": "fetch",
+        "f0": 675,
+        "f1": 750,
+        "label": "Charged battery pulled",
+        "detail": "The charged battery slides out of compartment A into the cradle."
+      },
+      {
+        "key": "turn_back",
+        "f0": 750,
+        "f1": 780,
+        "label": "Turn to 12 o'clock",
+        "detail": "The rotor brings the charged battery back in line with the aircraft's battery bay."
+      },
+      {
+        "key": "insert",
+        "f0": 780,
+        "f1": 870,
+        "label": "Battery inserted",
+        "detail": "The hook pushes the battery forward into the tail until it latches."
+      },
+      {
+        "key": "let_go",
+        "f0": 870,
+        "f1": 885,
+        "label": "Hook releases",
+        "detail": "The hook drops out of the handle."
+      },
+      {
+        "key": "retract",
+        "f0": 885,
+        "f1": 945,
+        "label": "Hook returns",
+        "detail": "The lead screw returns the hook to the rear of the cradle."
+      },
+      {
+        "key": "home",
+        "f0": 945,
+        "f1": 1020,
+        "label": "Rotor home",
+        "detail": "The rotor turns 180\u00b0 back; its hatch plate closes the pad flush. Swap complete."
+      }
+    ],
+    "batteries": {
+      "B1": {
+        "level": 22,
+        "schedule": [
+          [
+            0,
+            "ac"
+          ],
+          [
+            375,
+            "cradle"
+          ],
+          [
+            600,
+            "C"
+          ]
+        ],
+        "charge_from": 600
+      },
+      "B2": {
+        "level": 95,
+        "schedule": [
+          [
+            0,
+            "A"
+          ],
+          [
+            675,
+            "cradle"
+          ],
+          [
+            870,
+            "ac"
+          ]
+        ],
+        "charge_from": null
+      },
+      "B3": {
+        "level": 95,
+        "schedule": [
+          [
+            0,
+            "B"
+          ]
+        ],
+        "charge_from": null
+      },
+      "B4": {
+        "level": 68,
+        "schedule": [
+          [
+            0,
+            "D"
+          ]
+        ],
+        "charge_from": 0
+      }
+    },
+    "compartments": {
+      "A": 45.0,
+      "B": 95.0,
+      "C": 145.0,
+      "D": 215.0
+    },
+    "theta_keys": [
+      [
+        270,
+        180
+      ],
+      [
+        315,
+        0
+      ],
+      [
+        465,
+        0
+      ],
+      [
+        525,
+        145
+      ],
+      [
+        615,
+        145
+      ],
+      [
+        660,
+        45
+      ],
+      [
+        750,
+        45
+      ],
+      [
+        780,
+        0
+      ],
+      [
+        945,
+        0
+      ],
+      [
+        1020,
+        180
+      ]
+    ]
+  },
+  "hotspots": [
+    {
+      "group": "dock",
+      "id": "1",
+      "label": "Wind Speed Gauge"
+    },
+    {
+      "group": "dock",
+      "id": "2",
+      "label": "Dock Camera"
+    },
+    {
+      "group": "dock",
+      "id": "3",
+      "label": "Camera Auxiliary Light"
+    },
+    {
+      "group": "dock",
+      "id": "4",
+      "label": "Illuminated Positioning Markers"
+    },
+    {
+      "group": "dock",
+      "id": "5",
+      "label": "Aircraft Front Orientation Marker"
+    },
+    {
+      "group": "dock",
+      "id": "6",
+      "label": "Landing Pad (wireless charging)"
+    },
+    {
+      "group": "dock",
+      "id": "7",
+      "label": "Drain Pipe Hole (underneath)"
+    },
+    {
+      "group": "dock",
+      "id": "8",
+      "label": "Battery Swapping Module (hatch)"
+    },
+    {
+      "group": "dock",
+      "id": "9",
+      "label": "Rainfall Gauge"
+    },
+    {
+      "group": "dock",
+      "id": "10",
+      "label": "Dock Cover"
+    },
+    {
+      "group": "dock",
+      "id": "11",
+      "label": "Mounting Base Brackets"
+    },
+    {
+      "group": "dock",
+      "id": "12",
+      "label": "Dock Status Indicator"
+    },
+    {
+      "group": "dock",
+      "id": "13",
+      "label": "Electrical Cabinet"
+    },
+    {
+      "group": "dock",
+      "id": "14",
+      "label": "Earth Wire"
+    },
+    {
+      "group": "swap",
+      "id": "S1",
+      "label": "Battery compartments A\u2013D (C-shaped cage)"
+    },
+    {
+      "group": "swap",
+      "id": "S2",
+      "label": "Rotor drive and flange"
+    },
+    {
+      "group": "swap",
+      "id": "S3",
+      "label": "Lead screw"
+    },
+    {
+      "group": "swap",
+      "id": "S4",
+      "label": "Hook (grips the battery handle)"
+    },
+    {
+      "group": "swap",
+      "id": "S5",
+      "label": "Cradle"
+    },
+    {
+      "group": "swap",
+      "id": "S6",
+      "label": "Charging contacts"
+    },
+    {
+      "group": "swap",
+      "id": "S7",
+      "label": "Hatch plate (flush when home)"
+    },
+    {
+      "group": "aircraft",
+      "id": "A1",
+      "label": "Integrated Gimbal Camera"
+    },
+    {
+      "group": "aircraft",
+      "id": "A2",
+      "label": "Motor"
+    },
+    {
+      "group": "aircraft",
+      "id": "A3",
+      "label": "Front LEDs"
+    },
+    {
+      "group": "aircraft",
+      "id": "A4",
+      "label": "Propellers (1564F, 15 in)"
+    },
+    {
+      "group": "aircraft",
+      "id": "A6",
+      "label": "Frame Arm (internal antennas)"
+    },
+    {
+      "group": "aircraft",
+      "id": "A11",
+      "label": "LiDAR"
+    },
+    {
+      "group": "aircraft",
+      "id": "A13",
+      "label": "Beacon"
+    },
+    {
+      "group": "aircraft",
+      "id": "A14",
+      "label": "Intelligent Flight Battery (tail)"
+    },
+    {
+      "group": "aircraft",
+      "id": "A15",
+      "label": "Battery Level LEDs"
+    }
+  ],
+  "geometry": {
+    "rotor_axis_z_mm": 320.0,
+    "transfer_radius_mm": 165.0,
+    "deck_z_mm": 440.0,
+    "hatch_mm": [
+      46.0,
+      262.0,
+      -190.0,
+      66.0
+    ],
+    "rear_face_x_mm": 40.0,
+    "hook_stroke_mm": 185.0,
+    "screw_pitch_mm": 8.0
+  }
+}

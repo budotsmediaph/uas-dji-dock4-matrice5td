@@ -1,0 +1,14 @@
+# DJI and third-party material: manuals, DJI's STEP, launch and dealer footage, key frames. Kept local, never published.
+research/
+# derived from DJI's CAD (falls under DJI's download terms)
+official/m5td_vertices.npy
+official/m5td_vertices_views.png
+# generated: rebuild with blender/build.py, renders/make_video.py, web/build_viewer.py
+renders/swap_frames/
+renders/captions/
+renders/*.log
+*.blend1
+web/artifact.html
+site/
+.wrangler/
+.DS_Store
