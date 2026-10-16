@@ -1369,8 +1369,10 @@ function recFinish(chunks) {
   $('#recLive').hidden = true; $('#recSetup').hidden = true; $('#recDone').hidden = false;
   recPanelOpen(true); recRefresh();
 }
-const CAP_SANS = '"Silkscreen", ui-monospace, Menlo, monospace', CAP_MONO = CAP_SANS;   // captions are signs: pixel face
-document.fonts?.load('16px Silkscreen').catch(() => {});
+// step titles and the swap clock in JetBrains Mono; the pixel face only for the 16 px kicker and credit (Canon rule 23:
+// bitmap fonts for small text only)
+const CAP_SANS = '"JetBrains Mono", ui-monospace, Menlo, monospace', CAP_PIX = '"Silkscreen", ui-monospace, Menlo, monospace';
+document.fonts?.load('16px Silkscreen').catch(() => {}); document.fonts?.load('600 48px "JetBrains Mono"').catch(() => {});
 function capLines(g, text, maxW, max = 2) {
   const lines = []; let line = '';
   for (const w of text.split(' ')) { const t2 = line ? `${line} ${w}` : w; if (line && g.measureText(t2).width > maxW) { lines.push(line); line = w; } else line = t2; }
@@ -1385,7 +1387,7 @@ function drawCaptions(g, W, H) {
   const boxW = tall ? W - 2 * m : Math.min(W * 0.46, 780 * s);
   g.save();
   g.textBaseline = 'top';
-  g.font = `400 ${48 * s}px ${CAP_SANS}`;
+  g.font = `600 ${48 * s}px ${CAP_SANS}`;
   const lines = capLines(g, title, boxW - 2 * px);
   const kickH = 24 * s, lineH = 56 * s, clockH = inSwap ? 44 * s : 0;
   const boxH = 2 * py + kickH + 12 * s + lines.length * lineH + clockH;
@@ -1393,17 +1395,17 @@ function drawCaptions(g, W, H) {
   g.fillStyle = 'rgba(12, 16, 19, 0.8)';
   g.beginPath(); if (g.roundRect) g.roundRect(x, y, boxW, boxH, 16 * s); else g.rect(x, y, boxW, boxH); g.fill();
   g.fillStyle = '#29c4d7'; g.fillRect(x, y + 16 * s, 5 * s, boxH - 32 * s);
-  g.fillStyle = '#8fdde8'; g.font = `400 ${16 * s}px ${CAP_MONO}`; g.fillText(kick, x + px, y + py, boxW - 2 * px);
-  g.fillStyle = '#ffffff'; g.font = `400 ${48 * s}px ${CAP_SANS}`;
+  g.fillStyle = '#8fdde8'; g.font = `400 ${16 * s}px ${CAP_PIX}`; g.fillText(kick, x + px, y + py, boxW - 2 * px);
+  g.fillStyle = '#ffffff'; g.font = `600 ${48 * s}px ${CAP_SANS}`;
   lines.forEach((l, i) => g.fillText(l, x + px, y + py + kickH + 12 * s + i * lineH, boxW - 2 * px));
   if (inSwap) {
     const by = y + py + kickH + 12 * s + lines.length * lineH + 14 * s, bw = boxW - 2 * px - 200 * s;
     g.fillStyle = 'rgba(255, 255, 255, 0.2)'; g.fillRect(x + px, by + 9 * s, bw, 8 * s);
     g.fillStyle = '#29c4d7'; g.fillRect(x + px, by + 9 * s, (bw * swapS) / 25, 8 * s);
-    g.fillStyle = '#ffffff'; g.font = `400 ${24 * s}px ${CAP_MONO}`; g.textAlign = 'right';
+    g.fillStyle = '#ffffff'; g.font = `500 ${24 * s}px ${CAP_SANS}`; g.textAlign = 'right';
     g.fillText(`${swapS.toFixed(1)} / 25.0 s`, x + boxW - px, by); g.textAlign = 'left';
   }
-  g.font = `400 ${16 * s}px ${CAP_MONO}`;
+  g.font = `400 ${16 * s}px ${CAP_PIX}`;
   const credit = 'DJI Dock 4 + Matrice 5TD · unofficial reconstruction · budotsmedia.com/uas';
   const cl = tall ? capLines(g, credit, W - 2 * m - 24 * s) : [credit], ch = 30 * s;
   const cw = Math.min(W - 2 * m, Math.max(...cl.map((l) => g.measureText(l).width)) + 24 * s);
