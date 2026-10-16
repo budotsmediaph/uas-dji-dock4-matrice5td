@@ -1,7 +1,7 @@
 # Dock 4 compilation video
 
 61 s, 1920 × 1080, 30 fps, H.264, silent AAC track. Shown on https://budotsmedia.com/uas/#video (1280 × 720 web encode)
-and posted on the Aerial Data Ops LinkedIn page.
+and made for the Aerial Data Ops LinkedIn page.
 
 | Time | Part | Source |
 |---|---|---|
