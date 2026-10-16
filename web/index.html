@@ -20,6 +20,7 @@
     --band-idle: #d9dfe4; --band-dock: #b8c3cc; --band-flight: #f3c969; --band-swap: #7fd3dd;
     --hold: #a61f18; --hold-bg: #f8dbd7; --caution: #7a560c; --caution-bg: #f7e8c8;
     --edge: #2a3640; --ring-body: #c4ccd3; --ring-cage: #6d7983;
+    --rec: #c8372d; --on-rec: #ffffff;
     --glass: rgba(247, 248, 249, .84);
     --shadow: 0 1px 2px rgba(15, 20, 24, .06), 0 8px 24px rgba(15, 20, 24, .08);
     --display: "Archivo", "Helvetica Neue", Arial, sans-serif;
@@ -34,6 +35,7 @@
       --band-idle: #1e252b; --band-dock: #37424b; --band-flight: #8f6f1f; --band-swap: #1f7780;
       --hold: #f38a80; --hold-bg: #381612; --caution: #ebc36b; --caution-bg: #302508;
       --edge: #b9c6d0; --ring-body: #2c353d; --ring-cage: #7b8792;
+      --rec: #ff6f61; --on-rec: #2a0503;
       --glass: rgba(17, 21, 25, .8); --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 10px 30px rgba(0, 0, 0, .35);
       color-scheme: dark;
     }
@@ -46,6 +48,7 @@
     --band-idle: #1e252b; --band-dock: #37424b; --band-flight: #8f6f1f; --band-swap: #1f7780;
     --hold: #f38a80; --hold-bg: #381612; --caution: #ebc36b; --caution-bg: #302508;
     --edge: #b9c6d0; --ring-body: #2c353d; --ring-cage: #7b8792;
+    --rec: #ff6f61; --on-rec: #2a0503;
     --glass: rgba(17, 21, 25, .8); --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 10px 30px rgba(0, 0, 0, .35);
     color-scheme: dark;
   }
@@ -102,6 +105,48 @@
   .times { position: absolute; left: 0; right: 0; bottom: 0; height: 12px; display: flex; justify-content: space-between; font: 500 10.5px/12px var(--mono); color: var(--ink-3); }
   .times b { color: var(--ink); font-weight: 600; }
   .speed { font: 600 11.5px/1 var(--mono); color: var(--ink); background: var(--panel-2); border: 1px solid var(--rule); border-radius: 8px; padding: 9px 10px; cursor: pointer; min-width: 44px; }
+
+  /* recorder: Rec button in the deck, settings panel above it */
+  .deck { grid-template-columns: auto minmax(0, 1fr) auto auto; }
+  .recbtn { display: inline-flex; align-items: center; gap: 7px; font: 600 11.5px/1 var(--mono); letter-spacing: .06em; text-transform: uppercase;
+    color: var(--ink); background: var(--panel-2); border: 1px solid var(--rule); border-radius: 8px; padding: 9px 10px; cursor: pointer; min-width: 44px; white-space: nowrap; }
+  .recbtn .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--rec); flex: none; }
+  .recbtn[aria-expanded="true"] { box-shadow: 0 0 0 1.5px var(--ink); }
+  .recbtn.on { background: var(--rec); border-color: var(--rec); color: var(--on-rec); }
+  .recbtn.on .dot { background: var(--on-rec); animation: recblink 1s steps(2, start) infinite; }
+  @keyframes recblink { to { opacity: .25; } }
+  .recpanel { position: absolute; right: 14px; bottom: 86px; width: min(318px, calc(100% - 28px)); box-sizing: border-box; padding: 14px; display: grid; gap: 11px; z-index: 6; }
+  .recpanel h3 { margin: 0; font: 700 15px/1.2 var(--display); letter-spacing: 0; text-transform: none; color: var(--ink); display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .recpanel h3 button { font: 600 16px/1 var(--display); color: var(--ink-2); background: none; border: 0; cursor: pointer; padding: 2px 4px; }
+  .recpanel p { margin: 0; font-size: 12.5px; line-height: 1.4; color: var(--ink-2); }
+  .recpanel .lbl { font: 600 10.5px/1.2 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 5px; }
+  .recpanel .opts { display: grid; gap: 3px; padding: 3px; background: var(--panel-2); border: 1px solid var(--rule); border-radius: 10px; }
+  .recpanel .opts.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .recpanel .opts button { font: 600 12px/1.15 var(--display); color: var(--ink-2); background: none; border: 0; border-radius: 7px; padding: 7px 4px; cursor: pointer; }
+  .recpanel .opts button small { display: block; font: 500 10.5px/1.3 var(--mono); color: var(--ink-3); margin-top: 2px; }
+  .recpanel .opts button[aria-pressed="true"] { background: var(--panel); color: var(--ink); box-shadow: 0 1px 2px rgba(0, 0, 0, .08), 0 0 0 1px var(--rule); }
+  .recpanel .opts button[aria-pressed="true"] small { color: var(--ink-2); }
+  .recpanel .opts button:disabled { opacity: .45; cursor: not-allowed; }
+  .recpanel label.chk { display: flex; gap: 8px; align-items: center; font-size: 13px; color: var(--ink); cursor: pointer; }
+  .recpanel label.chk input { accent-color: var(--accent-fill); width: 16px; height: 16px; margin: 0; }
+  .recpanel .go { font: 700 14px/1 var(--display); border: 0; border-radius: 10px; padding: 12px 14px; cursor: pointer; background: var(--rec); color: var(--on-rec);
+    display: flex; align-items: center; justify-content: center; gap: 9px; }
+  .recpanel .go .dot { width: 10px; height: 10px; border-radius: 50%; background: currentColor; }
+  .recpanel .go.stop .dot { border-radius: 2px; }
+  .recpanel .go.secondary { background: var(--panel-2); color: var(--ink); border: 1px solid var(--rule); }
+  .recpanel .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .recpanel .meter { display: grid; gap: 6px; }
+  .recpanel .meter .bar { height: 6px; border-radius: 3px; background: var(--band-idle); overflow: hidden; }
+  .recpanel .meter .bar i { display: block; height: 100%; width: 0; background: var(--rec); }
+  .recpanel .meter .num { font: 600 12px/1 var(--mono); display: flex; justify-content: space-between; color: var(--ink-2); }
+  .recpanel .meter .num b { color: var(--ink); }
+  .recpanel video { display: block; width: 100%; max-height: 230px; border-radius: 8px; background: #000; object-fit: contain; }
+  .recpanel .msg { font: 500 12px/1.4 var(--mono); color: var(--ink-2); }
+  .recpanel .msg.err { color: var(--hold); }
+  .stage.recording { box-shadow: inset 0 0 0 2px var(--rec); }
+  .stage.recording canvas { object-fit: contain; }
+  .stage.recording .pins { display: none; }
+  @media (prefers-reduced-motion: reduce) { .recbtn.on .dot { animation: none; } }
 
   .pins { position: absolute; inset: 0; pointer-events: none; }
   .pin { position: absolute; left: 0; top: 0; height: 22px; min-width: 22px; padding: 0 5px; box-sizing: border-box; margin: -11px 0 0 -11px;
@@ -220,7 +265,8 @@
   }
   @media (max-width: 600px) {
     .speed { display: none; }
-    .deck { grid-template-columns: auto minmax(0, 1fr); }
+    .deck { grid-template-columns: auto minmax(0, 1fr) auto; }
+    .recpanel { left: 10px; right: 10px; width: auto; top: 10px; bottom: auto; max-height: calc(100% - 20px); overflow-y: auto; }
     .blocks span { font-size: 0; }
     .step-card { width: 100%; }
     .step-card h2 { font-size: 18px; }
@@ -267,7 +313,6 @@
   .duty .bar2 i { display: block; height: 100%; border-radius: 4px; }
 
   /* generations */
-  .gen-grid { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 32px; align-items: start; }
   .tablebox { overflow-x: auto; border: 1px solid var(--rule); border-radius: 12px; }
   .gens { width: 100%; min-width: 600px; border-collapse: collapse; font-size: 13.5px; font-variant-numeric: tabular-nums; }
   .gens th, .gens td { padding: 9px 12px; border-bottom: 1px solid var(--rule); text-align: left; vertical-align: top; }
@@ -277,21 +322,57 @@
   .gens td.d4 { background: color-mix(in srgb, var(--accent-fill) 9%, var(--panel)); color: var(--ink); font-weight: 600; }
   .gens tr.grp th { font: 600 10.5px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); background: var(--panel); padding-top: 16px; }
   .gens .up { display: inline-block; margin-left: 6px; font: 600 10px/1 var(--mono); color: var(--accent); }
-  .calc { border: 1px solid var(--rule); border-radius: 12px; padding: 18px 18px 14px; display: grid; gap: 12px; }
-  .calc h3 { margin: 0; }
-  .calc .ctlrow { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; align-items: center; }
-  .calc label { font-weight: 500; font-size: 14px; }
-  .calc output { font: 600 14px/1 var(--mono); }
-  .calc input[type=range] { grid-column: 1 / -1; width: 100%; accent-color: var(--accent-fill); margin: 4px 0 0; }
-  .calc svg { width: 100%; height: auto; display: block; }
-  .calc svg text { font-family: var(--mono); font-size: 10.5px; fill: var(--ink-3); }
-  .readout3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px; background: var(--rule); border: 1px solid var(--rule); border-radius: 10px; overflow: hidden; }
-  .readout3 div { background: var(--panel); padding: 9px 10px; min-width: 0; }
-  .readout3 .k { display: flex; align-items: center; gap: 6px; font: 600 10px/1.2 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); }
-  .readout3 .k i { width: 10px; height: 3px; border-radius: 2px; }
-  .readout3 .v { display: block; font: 600 20px/1.2 var(--mono); margin-top: 4px; }
-  .readout3 .v small { font-size: 11px; font-weight: 500; color: var(--ink-2); }
-  .readout3 .s { display: block; font-size: 11.5px; color: var(--ink-2); margin-top: 2px; }
+  /* 02: one hour at the dock (flying / charging / swap strips with the battery charge under each) */
+  .hour { border: 1px solid var(--rule); border-radius: 14px; padding: 20px 20px 16px; display: grid; gap: 16px; background: var(--panel); }
+  .hour-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 12px 28px; }
+  .hour-head h3 { margin: 0; font: 700 22px/1.12 var(--display); font-stretch: 88%; letter-spacing: -.005em; text-transform: none; color: var(--ink); display: block; }
+  .hour-head h3 small { display: block; font: 500 13.5px/1.35 var(--display); font-stretch: 100%; letter-spacing: 0; text-transform: none; color: var(--ink-2); margin: 4px 0 0; }
+  .hour .ctlrow { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; align-items: center; width: min(360px, 100%); }
+  .hour .ctlrow label { font-weight: 500; font-size: 14px; }
+  .hour .ctlrow output { font: 700 16px/1 var(--mono); }
+  .hour .ctlrow input { grid-column: 1 / -1; width: 100%; accent-color: var(--accent-fill); margin: 4px 0 0; }
+  .hour-key { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 20px; font-size: 12.5px; color: var(--ink-2); }
+  .hour-key li { display: flex; align-items: center; gap: 7px; }
+  .hour-key i { width: 18px; height: 11px; border-radius: 3px; flex: none; }
+  .k-fly, .hseg.fly { background: var(--band-flight); }
+  .k-chg, .hseg.chg { background: repeating-linear-gradient(135deg, var(--band-dock) 0 5px, color-mix(in srgb, var(--band-dock) 50%, var(--panel)) 5px 10px); }
+  .k-swp, .hseg.swp { background: var(--accent-fill); }
+  .hour-key i.k-bat { height: 3px; background: var(--cell); }
+  .hrows { display: grid; gap: 14px; }
+  .hrow, .haxis { display: grid; grid-template-columns: 150px minmax(0, 1fr) 168px; gap: 16px; align-items: center; }
+  .hname b { display: block; font: 700 16px/1.2 var(--display); }
+  .hname small { display: block; font: 500 11.5px/1.35 var(--mono); color: var(--ink-3); margin-top: 3px; }
+  .hrow.is4 .hname b, .hrow.is4 .hstat b { color: var(--accent); }
+  .hviz { display: grid; gap: 3px; min-width: 0; }
+  .htrack { position: relative; height: 36px; border-radius: 6px; background: var(--panel-2); overflow: hidden; }
+  .htrack.none { display: flex; align-items: center; padding: 6px 10px; box-sizing: border-box; height: auto; min-height: 36px; font-size: 12px; line-height: 1.35; color: var(--ink-2);
+    background: repeating-linear-gradient(135deg, var(--panel-2) 0 6px, var(--band-idle) 6px 12px); }
+  .hseg { position: absolute; top: 0; bottom: 0; min-width: 2px; box-shadow: inset -1px 0 0 var(--panel); }
+  .hseg span { position: absolute; left: 7px; right: 3px; top: 50%; transform: translateY(-50%); font: 600 10.5px/1 var(--mono); color: var(--ink); white-space: nowrap; overflow: hidden; }
+  .hbat { width: 100%; height: 26px; display: block; border-radius: 5px; background: var(--panel-2); }
+  .hbat .fill { fill: color-mix(in srgb, var(--cell) 22%, transparent); stroke: none; }
+  .hbat .line { fill: none; stroke: var(--cell); stroke-width: 2; stroke-linejoin: round; }
+  .hstat { display: flex; align-items: center; gap: 9px; }
+  .hstat b { font: 700 32px/1 var(--mono); min-width: 2ch; text-align: right; }
+  .hstat span { font-size: 12px; line-height: 1.3; color: var(--ink-2); }
+  .haxis > div { position: relative; height: 14px; font: 500 10.5px/14px var(--mono); color: var(--ink-3); }
+  .haxis > div span { position: absolute; transform: translateX(-50%); white-space: nowrap; }
+  .haxis > div span:first-child { transform: none; }
+  .haxis > div span:last-child { transform: translateX(-100%); }
+  .hsteps { margin: 4px 0 0; padding: 0; list-style: none; counter-reset: hs; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px 26px; }
+  .hsteps li { counter-increment: hs; font-size: 13.5px; line-height: 1.5; color: var(--ink-2); padding-top: 34px; position: relative; }
+  .hsteps li::before { content: counter(hs); position: absolute; left: 0; top: 0; width: 24px; height: 24px; border-radius: 50%; background: var(--ink); color: var(--panel); font: 700 12px/24px var(--mono); text-align: center; }
+  .hsteps li b { color: var(--ink); }
+  .hour .note { margin: 0; font-size: 12.5px; line-height: 1.5; color: var(--ink-3); max-width: 110ch; }
+  @media (max-width: 760px) {
+    .hrow { grid-template-columns: minmax(0, 1fr) auto; gap: 8px 12px; }
+    .hrow .hviz { grid-column: 1 / -1; grid-row: 2; }
+    .haxis { grid-template-columns: minmax(0, 1fr); }
+    .haxis > span { display: none; }
+    .hsteps { grid-template-columns: minmax(0, 1fr); }
+    .hstat b { font-size: 26px; }
+    .haxis > div span:nth-child(even) { display: none; }
+  }
   .gen-notes { margin: 16px 0 0; display: grid; gap: 10px; font-size: 14px; color: var(--ink-2); }
   .gen-notes b { color: var(--ink); }
 
@@ -372,7 +453,6 @@
 
   @media (max-width: 1100px) {
     .scen { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .gen-grid { grid-template-columns: minmax(0, 1fr); }
     .tiles, .kv { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .tile.ac { grid-column: 1 / -1; }
   }
@@ -385,7 +465,6 @@
     .console .side .sample { margin-top: 4px; width: 100%; }
     .console .clockbar { grid-template-columns: auto minmax(0, 1fr); }
     .console .clockbar .state { grid-column: 1 / -1; justify-self: start; }
-    .readout3 .v { font-size: 17px; }
   }
 
 </style>
@@ -437,6 +516,41 @@
         <div class="times"><span><b id="clock">0.0</b> s</span><span id="total">44.0 s</span></div>
       </div>
       <button type="button" class="speed" id="speed" aria-label="Playback speed">1×</button>
+      <button type="button" class="recbtn" id="recBtn" aria-expanded="false" aria-controls="recPanel" hidden><span class="dot" aria-hidden="true"></span><span id="recBtnText">Rec</span></button>
+    </div>
+    <div class="recpanel glass" id="recPanel" role="group" aria-labelledby="recHead" hidden>
+      <h3 id="recHead"><span>Record video</span><button type="button" id="recClose" aria-label="Close the recorder">×</button></h3>
+      <div id="recSetup">
+        <p style="margin-bottom:11px">Records the 3D view as you see it, including camera moves and mode changes. The window shows the recorded frame while it runs.</p>
+        <div class="lbl">Frame</div>
+        <div class="opts three" role="group" aria-label="Frame size">
+          <button type="button" data-rf="wide" aria-pressed="true">16:9<small id="rfWide">1920 × 1080</small></button>
+          <button type="button" data-rf="tall" aria-pressed="false">9:16 Reels<small id="rfTall">1080 × 1920</small></button>
+          <button type="button" data-rf="window" aria-pressed="false">Window<small id="rfWin">—</small></button>
+        </div>
+        <div class="lbl" style="margin-top:11px">Length</div>
+        <div class="opts three" role="group" aria-label="Recording length">
+          <button type="button" data-rl="clip" aria-pressed="true">Whole clip<small>44 s</small></button>
+          <button type="button" data-rl="swap" aria-pressed="false">Swap only<small id="rlSwap">27 s</small></button>
+          <button type="button" data-rl="free" aria-pressed="false">Free<small>until stopped</small></button>
+        </div>
+        <label class="chk" style="margin-top:11px"><input type="checkbox" id="recCaps" checked> Step captions and credit in the video</label>
+        <p class="msg" id="recFmt" style="margin-top:8px"></p>
+        <button type="button" class="go" id="recStart" style="margin-top:11px;width:100%"><span class="dot" aria-hidden="true"></span>Start recording</button>
+      </div>
+      <div id="recLive" hidden>
+        <div class="meter"><div class="bar"><i id="recFill"></i></div><div class="num"><span>Recording <b id="recTime">0.0</b> s</span><span id="recOf"></span></div></div>
+        <button type="button" class="go stop" id="recStop" style="margin-top:11px;width:100%"><span class="dot" aria-hidden="true"></span>Stop</button>
+      </div>
+      <div id="recDone" hidden>
+        <video id="recPreview" controls playsinline loop muted></video>
+        <p class="msg" id="recInfo" style="margin-top:8px"></p>
+        <div class="row2" style="margin-top:10px">
+          <button type="button" class="go" id="recSave">Save video</button>
+          <button type="button" class="go secondary" id="recAgain">New recording</button>
+        </div>
+        <p class="msg" id="recSaveMsg" style="margin-top:8px" aria-live="polite"></p>
+      </div>
     </div>
     <div class="loading" id="loading">Loading model</div>
   </section>
@@ -601,11 +715,30 @@
     <header class="band-head">
       <span class="kicker">02 · Generations</span>
       <h2 id="genTitle">Dock 2, Dock 3 and Dock 4 compared</h2>
-      <p>Figures from DJI's spec sheets for each dock and its aircraft. The change that matters most between flights is the last row of the dock block: Dock 2 and Dock 3 recharge the battery inside the aircraft, while Dock 4 replaces it.</p>
+      <p>Figures from DJI's spec sheets for each dock and its aircraft. The biggest change is what happens between flights: Dock 2 and Dock 3 recharge their one battery inside the aircraft, while Dock 4 replaces it with a charged one. The hour view below shows what that does to flying time.</p>
     </header>
-    <div class="gen-grid">
-      <div>
-        <div class="tablebox">
+    <div class="hour" id="hour">
+      <div class="hour-head">
+        <h3>One hour at the dock<small>Recharge the battery in the aircraft, or swap it for a charged one</small></h3>
+        <div class="ctlrow"><label for="flightLen">Each flight lasts</label><output id="flightOut" for="flightLen">20 min</output>
+          <input type="range" id="flightLen" min="5" max="44" step="1" value="20"></div>
+      </div>
+      <ul class="hour-key" aria-label="Legend">
+        <li><i class="k-fly"></i>Flying</li>
+        <li><i class="k-chg"></i>On the pad: battery charging in the aircraft</li>
+        <li><i class="k-swp"></i>On the pad: battery swap, landing to take-off under 45 s</li>
+        <li><i class="k-bat"></i>Lower strip: charge of the battery in the aircraft, 0 to 100 %</li>
+      </ul>
+      <div class="hrows" id="hrows"></div>
+      <div class="haxis" aria-hidden="true"><span></span><div id="haxis"></div><span></span></div>
+      <ol class="hsteps">
+        <li><b>Dock 2 and Dock 3 have one battery.</b> It stays in the aircraft. After every flight the aircraft waits on the pad while the dock recharges it: 27 min from 15 to 95 % on Dock 3, 32 min from 20 to 90 % on Dock 2.</li>
+        <li><b>Dock 4 has four batteries.</b> One is in the aircraft and three wait in compartments. After landing, the dock pulls the used battery out of the tail and pushes a charged one in. The swap takes under 25 s; landing to take-off, under 45 s.</li>
+        <li><b>The used battery charges while the aircraft flies.</b> Two charging channels each take a battery from 15 to 95 % in 27 min. In this model a charged battery is ready at every landing, at every flight length on the slider.</li>
+      </ol>
+      <p class="note">How the strips are worked out: a flight drains the battery at the hover rate (100 % divided by the maximum hover time, per minute). Dock 2 and Dock 3 put that charge back at DJI's published charging speed, plus 20 s for landing and closing the cover. Dock 4 spends 45 s on the pad per landing. Each strip is one hour from a long day of back-to-back flights, picked so that its flying time equals the day's average. Wind, cold and payload shorten real flights.</p>
+    </div>
+    <div class="tablebox" style="margin-top:28px">
           <table class="gens">
             <thead><tr><th scope="col"><span hidden>Item</span></th>
               <th scope="col">Dock 2<small>Matrice 3D / 3TD</small></th>
@@ -634,16 +767,6 @@
           </table>
         </div>
         <p class="srcs">¹ Includes the 145 mm wind speed gauge and the mounting brackets (58 mm on Dock 3, 69 mm on Dock 4); Dock 3 also includes its 160 mm RTK module. On Dock 4 the RTK base station is in the separate O4 Ground Station. — means not given in the spec data used.</p>
-      </div>
-      <div class="calc">
-        <h3>Airborne minutes per hour <small>by flight length</small></h3>
-        <div class="ctlrow"><label for="flightLen">Length of each flight</label><output id="flightOut" for="flightLen">20 min</output>
-          <input type="range" id="flightLen" min="5" max="44" step="1" value="20"></div>
-        <svg id="dutyChart" viewBox="0 0 420 250" role="img" aria-label="Airborne minutes per hour against flight length for Dock 2, Dock 3 and Dock 4"></svg>
-        <div class="readout3" id="dutyOut"></div>
-        <p class="note" style="margin:0">Model: battery use at the hover rate (100 % ÷ max hover time per minute) inside each dock's charge window. Dock 2 and Dock 3 recharge the used energy at DJI's published rate, plus 20 s for landing and the cover. Dock 4 spends 45 s on the ground; its two channels recharge a used battery before it is needed again, at every flight length shown. Wind, cold and payload shorten real flights.</p>
-      </div>
-    </div>
     <div class="gen-notes" id="genNotes"></div>
   </section>
 
@@ -842,11 +965,15 @@ composer.addPass(bloom);
 composer.addPass(new OutputPass());
 const strong = (navigator.hardwareConcurrency || 4) >= 8 && !matchMedia('(pointer: coarse)').matches;
 
+let rec = null;               // active recording: the drawing buffer takes its frame size; the canvas letterboxes it on screen
 function resize() {
-  const w = stage.clientWidth, h = stage.clientHeight, pr = strong ? Math.min(window.devicePixelRatio || 1, 2) : 1;
+  const pr = rec ? 1 : strong ? Math.min(window.devicePixelRatio || 1, 2) : 1;
+  const w = rec ? rec.w : stage.clientWidth, h = rec ? rec.h : stage.clientHeight;
   renderer.setPixelRatio(pr); renderer.setSize(w, h, false);
   composer.setPixelRatio(pr); composer.setSize(w, h);
-  camera.aspect = w / Math.max(h, 1); camera.updateProjectionMatrix();
+  camera.aspect = w / Math.max(h, 1);
+  camera.zoom = rec && rec.h > rec.w ? 0.62 : 1;   // a vertical frame keeps the mechanism, not the whole open dock
+  camera.updateProjectionMatrix();
 }
 new ResizeObserver(resize).observe(stage);
 
@@ -1086,6 +1213,179 @@ $('#speed').addEventListener('click', () => { speed = SPEEDS[(SPEEDS.indexOf(spe
 canvas.addEventListener('keydown', (e) => { if (e.code === 'Space') { e.preventDefault(); setPlaying(!playing); } });
 setPlaying(playing);
 
+// ====================================================================== recorder
+// Each rendered frame is copied into a 2D canvas of the chosen frame size (captions drawn on top) and encoded by
+// MediaRecorder in real time. Saving goes through the Claude viewer's downloads capability when the page runs there,
+// otherwise through an ordinary download link (budotsmedia.com, local file).
+const recDl = window.claude && typeof window.claude.use === 'function' ? window.claude.use('downloads').catch(() => null) : Promise.resolve(null);
+const REC_TYPES = [['video/mp4;codecs=avc1.640028', 'mp4', 'MP4 (H.264)'], ['video/mp4;codecs=avc1', 'mp4', 'MP4 (H.264)'], ['video/mp4', 'mp4', 'MP4'],
+  ['video/webm;codecs=vp9', 'webm', 'WebM (VP9)'], ['video/webm;codecs=vp8', 'webm', 'WebM (VP8)'], ['video/webm', 'webm', 'WebM']];
+const recType = typeof MediaRecorder !== 'undefined' && typeof HTMLCanvasElement.prototype.captureStream === 'function'
+  ? REC_TYPES.find(([m]) => { try { return MediaRecorder.isTypeSupported(m); } catch { return false; } }) || null : null;
+const BIG = strong ? [1920, 1080] : [1280, 720];
+const SWAP_A = Math.max(0, FR.swap0 / FPS - 1), SWAP_B = Math.min(duration, FR.swap1 / FPS + 1);
+const recUI = { frame: 'wide', len: 'clip', blob: null, url: null, name: '' };
+const speedLabel = (v) => (v === 0.5 ? '½' : v === 0.25 ? '¼' : v) + '×';
+const fmtClock = (x) => `${Math.floor(x / 60)}:${String(Math.floor(x % 60)).padStart(2, '0')}`;
+function recSize(frame) {
+  if (frame === 'wide') return [BIG[0], BIG[1]];
+  if (frame === 'tall') return [BIG[1], BIG[0]];
+  const pr = Math.min(window.devicePixelRatio || 1, 2), even = (x) => Math.max(2, Math.round((x * pr) / 2) * 2);
+  return [even(stage.clientWidth), even(stage.clientHeight)];
+}
+function recRefresh() {
+  $('#rfWide').textContent = `${BIG[0]} × ${BIG[1]}`; $('#rfTall').textContent = `${BIG[1]} × ${BIG[0]}`;
+  $('#rfWin').textContent = recSize('window').join(' × ');
+  $('#rlSwap').textContent = `${Math.round(SWAP_B - SWAP_A)} s`;
+  $$('[data-rf]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.rf === recUI.frame)));
+  $$('[data-rl]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.rl === recUI.len)));
+  $('#recFmt').classList.remove('err');
+  $('#recFmt').textContent = `${recType[2]} · 30 fps · ${recSize(recUI.frame).join(' × ')} px`;
+}
+function recPanelOpen(on) {
+  $('#recPanel').hidden = !on; $('#recBtn').setAttribute('aria-expanded', String(on));
+  if (on && !rec && !$('#recSetup').hidden) recRefresh();
+}
+function recStart() {
+  if (!mixer || rec) return;
+  const [w, h] = recSize(recUI.frame);
+  const out = document.createElement('canvas'); out.width = w; out.height = h;
+  const ctx = out.getContext('2d'), stream = out.captureStream(30);
+  let mr;
+  try { mr = new MediaRecorder(stream, { mimeType: recType[0], videoBitsPerSecond: Math.round(w * h * 4.5) }); }
+  catch (e) { $('#recFmt').textContent = `Recording could not start: ${e.message}`; $('#recFmt').classList.add('err'); return; }
+  const chunks = [];
+  mr.ondataavailable = (e) => { if (e.data && e.data.size) chunks.push(e.data); };
+  mr.onstop = () => { stream.getTracks().forEach((tr) => tr.stop()); recFinish(chunks); };
+  const len = recUI.len === 'clip' ? duration : recUI.len === 'swap' ? SWAP_B - SWAP_A : 0;
+  rec = { w, h, ctx, mr, len, played: 0, t0: performance.now(), caps: $('#recCaps').checked, speed0: speed, lastUI: 0, scope: recUI.len };
+  if (len) { speed = 1; $('#speed').textContent = speedLabel(1); setTime(recUI.len === 'swap' ? SWAP_A : 0); setPlaying(true); }
+  stage.classList.add('recording');
+  resize();
+  mr.start(1000);
+  $('#recSetup').hidden = true; $('#recDone').hidden = true; $('#recLive').hidden = false;
+  $('#recFill').parentElement.hidden = !len;
+  $('#recOf').textContent = len ? `of ${len.toFixed(1)} s` : 'stop when done';
+  $('#recBtn').classList.add('on'); $('#recBtn').setAttribute('aria-label', 'Stop recording');
+}
+function recStop() {
+  if (!rec || rec.stopping) return;
+  rec.stopping = true;
+  try { rec.mr.stop(); } catch { recFinish([]); }
+}
+function recFrame(dt) {
+  if (rec.stopping) return;
+  if (playing) rec.played += dt * speed;
+  if (rec.len && rec.played >= rec.len) { recStop(); return; }     // stop before the clip wraps to frame 0
+  rec.ctx.drawImage(canvas, 0, 0, rec.w, rec.h);
+  if (rec.caps) drawCaptions(rec.ctx, rec.w, rec.h);
+  const now = performance.now();
+  if (now - rec.lastUI > 200) {
+    rec.lastUI = now;
+    const el = (now - rec.t0) / 1000;
+    $('#recTime').textContent = el.toFixed(1); $('#recBtnText').textContent = fmtClock(el);
+    if (rec.len) $('#recFill').style.width = `${Math.min(100, (rec.played / rec.len) * 100)}%`;
+  }
+}
+function recFinish(chunks) {
+  const r = rec; rec = null;
+  stage.classList.remove('recording');
+  resize();
+  speed = r.speed0; $('#speed').textContent = speedLabel(speed);
+  $('#recBtn').classList.remove('on'); $('#recBtnText').textContent = 'Rec'; $('#recBtn').removeAttribute('aria-label');
+  const blob = new Blob(chunks, { type: recType[0].split(';')[0] });
+  if (recUI.url) URL.revokeObjectURL(recUI.url);
+  recUI.blob = blob.size ? blob : null; recUI.url = blob.size ? URL.createObjectURL(blob) : null;
+  recUI.name = `dji-dock4-matrice5td_${r.scope === 'clip' ? 'turnaround' : r.scope === 'swap' ? 'battery-swap' : 'view'}_${r.w}x${r.h}.${recType[1]}`;
+  const secs = (performance.now() - r.t0) / 1000;
+  $('#recPreview').src = recUI.url || '';
+  $('#recInfo').textContent = blob.size ? `${recUI.name} · ${(blob.size / 1e6).toFixed(1)} MB · ${secs.toFixed(1)} s`
+    : 'The recording came out empty. Try again, or choose the Window frame.';
+  $('#recSave').disabled = !blob.size; $('#recSave').textContent = `Save ${recType[1].toUpperCase()}`;
+  $('#recSaveMsg').textContent = ''; $('#recSaveMsg').classList.remove('err');
+  $('#recLive').hidden = true; $('#recSetup').hidden = true; $('#recDone').hidden = false;
+  recPanelOpen(true);
+}
+const CAP_SANS = '"Archivo", "Helvetica Neue", Arial, sans-serif', CAP_MONO = '"JetBrains Mono", ui-monospace, Menlo, monospace';
+function capLines(g, text, maxW, max = 2) {
+  const lines = []; let line = '';
+  for (const w of text.split(' ')) { const t2 = line ? `${line} ${w}` : w; if (line && g.measureText(t2).width > maxW) { lines.push(line); line = w; } else line = t2; }
+  if (line) lines.push(line);
+  return lines.slice(0, max);
+}
+function drawCaptions(g, W, H) {
+  const s = Math.min(W, H) / 1080, tall = H > W, m = (tall ? 56 : 44) * s, px = 28 * s, py = 22 * s;
+  const kick = $('#stepKicker').textContent.toUpperCase(), title = $('#stepTitle').textContent;
+  const f = t * FPS, inSwap = f >= FR.swap0 && f <= FR.swap1;
+  const swapS = (clamp01((f - FR.swap0) / (FR.swap1 - FR.swap0)) * (FR.swap1 - FR.swap0)) / FPS;
+  const boxW = tall ? W - 2 * m : Math.min(W * 0.46, 780 * s);
+  g.save();
+  g.textBaseline = 'top';
+  g.font = `700 ${52 * s}px ${CAP_SANS}`;
+  const lines = capLines(g, title, boxW - 2 * px);
+  const kickH = 24 * s, lineH = 58 * s, clockH = inSwap ? 44 * s : 0;
+  const boxH = 2 * py + kickH + 12 * s + lines.length * lineH + clockH;
+  const x = m, y = tall ? H * 0.11 : H - m - 34 * s - boxH;     // 9:16: below the app's top bar; 16:9: bottom left, above the credit
+  g.fillStyle = 'rgba(12, 16, 19, 0.8)';
+  g.beginPath(); if (g.roundRect) g.roundRect(x, y, boxW, boxH, 16 * s); else g.rect(x, y, boxW, boxH); g.fill();
+  g.fillStyle = '#29c4d7'; g.fillRect(x, y + 16 * s, 5 * s, boxH - 32 * s);
+  g.fillStyle = '#8fdde8'; g.font = `600 ${21 * s}px ${CAP_MONO}`; g.fillText(kick, x + px, y + py, boxW - 2 * px);
+  g.fillStyle = '#ffffff'; g.font = `700 ${52 * s}px ${CAP_SANS}`;
+  lines.forEach((l, i) => g.fillText(l, x + px, y + py + kickH + 12 * s + i * lineH, boxW - 2 * px));
+  if (inSwap) {
+    const by = y + py + kickH + 12 * s + lines.length * lineH + 14 * s, bw = boxW - 2 * px - 200 * s;
+    g.fillStyle = 'rgba(255, 255, 255, 0.2)'; g.fillRect(x + px, by + 9 * s, bw, 8 * s);
+    g.fillStyle = '#29c4d7'; g.fillRect(x + px, by + 9 * s, (bw * swapS) / 25, 8 * s);
+    g.fillStyle = '#ffffff'; g.font = `600 ${24 * s}px ${CAP_MONO}`; g.textAlign = 'right';
+    g.fillText(`${swapS.toFixed(1)} / 25.0 s`, x + boxW - px, by); g.textAlign = 'left';
+  }
+  g.font = `500 ${20 * s}px ${CAP_MONO}`;
+  const credit = 'DJI Dock 4 + Matrice 5TD · unofficial reconstruction · budotsmedia.com/uas';
+  const cl = tall ? capLines(g, credit, W - 2 * m - 24 * s) : [credit], ch = 30 * s;
+  const cw = Math.min(W - 2 * m, Math.max(...cl.map((l) => g.measureText(l).width)) + 24 * s);
+  const cy = tall ? y + boxH + 12 * s : H - m - ch * cl.length - 4 * s;
+  g.fillStyle = 'rgba(12, 16, 19, 0.66)';
+  g.beginPath(); if (g.roundRect) g.roundRect(x, cy, cw, ch * cl.length + 4 * s, 8 * s); else g.rect(x, cy, cw, ch * cl.length + 4 * s); g.fill();
+  g.fillStyle = '#ffffff'; g.textBaseline = 'middle';
+  cl.forEach((l, i) => g.fillText(l, x + 12 * s, cy + 2 * s + ch * (i + 0.5), cw - 24 * s));
+  g.restore();
+}
+if (recType) $('#recBtn').hidden = false;
+$('#recBtn').addEventListener('click', () => { if (rec) recStop(); else recPanelOpen($('#recPanel').hidden); });
+$('#recClose').addEventListener('click', () => recPanelOpen(false));
+$('#recPanel').addEventListener('keydown', (e) => { if (e.key === 'Escape') { recPanelOpen(false); $('#recBtn').focus(); } });
+$$('[data-rf]').forEach((b) => b.addEventListener('click', () => { recUI.frame = b.dataset.rf; recRefresh(); }));
+$$('[data-rl]').forEach((b) => b.addEventListener('click', () => { recUI.len = b.dataset.rl; recRefresh(); }));
+$('#recStart').addEventListener('click', recStart);
+$('#recStop').addEventListener('click', recStop);
+$('#recAgain').addEventListener('click', () => {
+  if (recUI.url) URL.revokeObjectURL(recUI.url);
+  recUI.blob = recUI.url = null; $('#recPreview').removeAttribute('src');
+  $('#recDone').hidden = true; $('#recSetup').hidden = false; recRefresh();
+});
+$('#recSave').addEventListener('click', async () => {
+  const msg = $('#recSaveMsg');
+  if (!recUI.blob) return;
+  msg.classList.remove('err'); msg.textContent = '';
+  const dl = await recDl;
+  if (dl) {
+    try { await dl.save({ filename: recUI.name, data: recUI.blob }); msg.textContent = 'Saved.'; }
+    catch (e) {
+      const c = e && e.code;
+      msg.classList.toggle('err', c !== 'declined');
+      msg.textContent = c === 'declined' ? 'Not saved.'
+        : c === 'rate_limited' ? 'A save prompt is already open. Try again in a moment.'
+        : c === 'too_large' ? 'The file is too large for this view. Record a shorter clip or a smaller frame.'
+        : 'Saving is not available in this view. Right-click the preview and choose Save video as.';
+    }
+    return;
+  }
+  if (window.claude) { msg.textContent = 'Saving is not available in this view. Right-click the preview and choose Save video as.'; return; }
+  const a = document.createElement('a'); a.href = recUI.url; a.download = recUI.name;
+  document.body.appendChild(a); a.click(); a.remove();
+  msg.textContent = `Download started: ${recUI.name}`;
+});
+
 // ====================================================================== transfer ring (rear view, SVG)
 const SVGNS = 'http://www.w3.org/2000/svg';
 const ring = $('#ring');
@@ -1317,6 +1617,7 @@ function tick() {
   applyDynamics(now);
   updatePins(now);
   composer.render(dt);
+  if (rec && rec.ctx) recFrame(dt);
 }
 
 new MutationObserver(() => { paintBackdrop(); for (const e of edges) e.material.color.set(cssVar('--edge')); }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
@@ -1388,49 +1689,87 @@ window.dock4 = { jump(frame, m) { if (m) setMode(m); setTime(frame / FPS); setPl
     scenEl.appendChild(a);
   }
 
-  // ==================================================================== 02 generations chart
-  const chart = $('#dutyChart'), out = $('#dutyOut'), slider = $('#flightLen');
-  const CW = 420, CH = 250, L = 36, R = 12, Tp = 26, B = 32, X0 = 5, X1 = 44;
-  const xs = (T) => L + (T - X0) / (X1 - X0) * (CW - L - R), ys = (v) => Tp + (1 - v / 60) * (CH - Tp - B);
-  let marker;
-  function drawDuty() {
-    chart.textContent = '';
-    for (const v of [0, 15, 30, 45, 60]) {
-      svgEl('line', { x1: L, x2: CW - R, y1: ys(v), y2: ys(v), stroke: 'var(--rule)', 'stroke-width': 1 }, chart);
-      svgEl('text', { x: L - 6, y: ys(v) + 3.5, 'text-anchor': 'end' }, chart).textContent = v;
+  // ==================================================================== 02 one hour at the dock
+  // Back-to-back flights of T minutes. Each strip is a 60-minute window of that long day, placed so that its flying
+  // time equals the day's average (cycle().perHour), so the numbers match section 01 and the notes below.
+  const slider = $('#flightLen'), rowsEl = $('#hrows');
+  const TOP = { d2: 90, d3: 95, d4: 95 };          // charge at take-off: top of each dock's charge window
+  const SPAN = 60;
+  function hourPlan(key, g, T) {
+    const c = cycle(g, T);
+    if (!c) return null;
+    const C = T + c.ground, top = TOP[key];
+    const airIn = (phi) => {
+      let a = 0;
+      for (let k = Math.floor(phi / C); k * C < phi + SPAN; k++) a += Math.max(0, Math.min(k * C + T, phi + SPAN) - Math.max(k * C, phi));
+      return a;
+    };
+    let phi0 = 0, best = Infinity;
+    for (let i = 0; i < 600; i++) { const phi = (C * i) / 600, d = Math.abs(airIn(phi) - c.perHour); if (d < best - 1e-9) { best = d; phi0 = phi; } }
+    const segs = [], pts = [];
+    for (let k = Math.floor(phi0 / C); k * C < phi0 + SPAN; k++) {
+      const s0 = k * C - phi0, s1 = s0 + T, s2 = s0 + C, low = top - c.E;
+      segs.push({ kind: 'fly', a: s0, b: s1, n: g.swap ? (k % 4) + 1 : 1 }, { kind: g.swap ? 'swp' : 'chg', a: s1, b: s2 });
+      pts.push({ x: s0, y: top }, { x: s1, y: low });
+      if (g.swap) { const m = s1 + c.ground / 2; pts.push({ x: m, y: low }, { x: m, y: top }); }
+      else pts.push({ x: s1 + OVER, y: low });
+      pts.push({ x: s2, y: top });
     }
-    for (const T of [5, 10, 20, 30, 40]) svgEl('text', { x: xs(T), y: CH - B + 16, 'text-anchor': 'middle' }, chart).textContent = T;
-    svgEl('text', { x: CW - R, y: CH - 4, 'text-anchor': 'end' }, chart).textContent = 'flight length, min';
-    svgEl('text', { x: L - 6, y: 12, 'text-anchor': 'start' }, chart).textContent = 'min airborne per hour';
-    for (const g of Object.values(GEN)) {
-      let d = '';
-      for (let T = X0; T <= X1; T += 0.25) { const c = cycle(g, T); if (!c) break; d += `${d ? 'L' : 'M'}${xs(T).toFixed(1)} ${ys(c.perHour).toFixed(1)}`; }
-      svgEl('path', { d, fill: 'none', stroke: `var(${g.color})`, 'stroke-width': g.swap ? 3 : 2, 'stroke-linejoin': 'round' }, chart);
-      const end = Math.min(X1, g.window * g.hover / 100);
-      const c = cycle(g, end);
-      if (c && end < X1) svgEl('circle', { cx: xs(end), cy: ys(c.perHour), r: 3, fill: `var(${g.color})` }, chart);
-    }
-    marker = svgEl('g', {}, chart);
-    updateDuty();
+    const at = (x) => { for (let i = 0; i < pts.length - 1; i++) { const p = pts[i], q = pts[i + 1]; if (x >= p.x && x <= q.x && q.x > p.x) return p.y + ((q.y - p.y) * (x - p.x)) / (q.x - p.x); } return top; };
+    const line = [{ x: 0, y: at(0) }, ...pts.filter((p) => p.x > 0 && p.x < SPAN), { x: SPAN, y: at(SPAN) }];
+    const clipped = segs.map((q) => ({ ...q, a: Math.max(0, q.a), b: Math.min(SPAN, q.b) })).filter((q) => q.b - q.a > 1e-6);
+    return { c, segs: clipped, line, air: airIn(phi0) };
   }
-  function updateDuty() {
+  function drawHour() {
     const T = parseInt(slider.value, 10);
     $('#flightOut').textContent = `${T} min`;
-    marker.textContent = '';
-    svgEl('line', { x1: xs(T), x2: xs(T), y1: Tp, y2: CH - B, stroke: 'var(--ink-3)', 'stroke-dasharray': '3 3' }, marker);
-    out.textContent = '';
-    for (const g of Object.values(GEN)) {
-      const c = cycle(g, T);
-      if (c) svgEl('circle', { cx: xs(T), cy: ys(c.perHour), r: 4.5, fill: 'var(--panel)', stroke: `var(${g.color})`, 'stroke-width': 2.5 }, marker);
-      const d = document.createElement('div');
-      d.innerHTML = `<span class="k"><i style="background:var(${g.color})"></i>${g.name}</span><span class="v"></span><span class="s"></span>`;
-      d.querySelector('.v').innerHTML = c ? `${Math.round(c.perHour)} <small>min/h</small>` : '<small>over one charge</small>';
-      d.querySelector('.s').textContent = c ? `${c.ground < 1 ? Math.round(c.ground * 60) + ' s' : fmt1(c.ground) + ' min'} on the ground · ${c.per8} flights in 8 h` : `max ${Math.floor(g.window * g.hover / 100)} min within ${g.window} % of charge`;
-      out.appendChild(d);
+    rowsEl.textContent = '';
+    for (const [key, g] of Object.entries(GEN)) {
+      const plan = hourPlan(key, g, T);
+      const row = document.createElement('div');
+      row.className = 'hrow' + (g.swap ? ' is4' : '');
+      row.innerHTML = '<div class="hname"><b></b><small></small></div><div class="hviz"><div class="htrack"></div></div><div class="hstat"></div>';
+      row.querySelector('b').textContent = g.name;
+      row.querySelector('small').textContent = `${g.ac} · ${g.swap ? '4 batteries' : '1 battery'}`;
+      const track = row.querySelector('.htrack'), stat = row.querySelector('.hstat');
+      if (!plan) {
+        const max = Math.floor((g.window * g.hover) / 100);
+        track.classList.add('none');
+        track.textContent = `A ${T} min flight needs more than the ${g.window} % this dock charges between flights. Longest flight: ${max} min.`;
+        stat.innerHTML = '<b>–</b><span>not possible<br>at this length</span>';
+        row.setAttribute('aria-label', `${g.name}: a ${T} minute flight is not possible; longest ${max} minutes.`);
+      } else {
+        for (const q of plan.segs) {
+          const w = q.b - q.a, frac = w / SPAN, el = document.createElement('div');
+          el.className = `hseg ${q.kind}`;
+          el.style.left = `${(q.a / SPAN) * 100}%`; el.style.width = `${frac * 100}%`;
+          let label = '';
+          if (q.kind === 'fly') label = frac > 0.24 ? `flying · battery ${q.n}` : frac > 0.08 ? `B${q.n}` : '';
+          else if (q.kind === 'chg') label = frac > 0.26 ? `charging ${Math.round(w)} min` : frac > 0.09 ? `${Math.round(w)} min` : '';
+          if (label) { const sp = document.createElement('span'); sp.textContent = label; el.appendChild(sp); }
+          track.appendChild(el);
+        }
+        const bat = svgEl('svg', { class: 'hbat', viewBox: '0 0 600 100', preserveAspectRatio: 'none', 'aria-hidden': 'true' });
+        const d = plan.line.map((p, i) => `${i ? 'L' : 'M'}${(p.x * 10).toFixed(2)} ${(100 - p.y).toFixed(2)}`).join('');
+        svgEl('path', { d: `${d}L600 100L0 100Z`, class: 'fill' }, bat);
+        svgEl('path', { d, class: 'line', 'vector-effect': 'non-scaling-stroke' }, bat);
+        row.querySelector('.hviz').appendChild(bat);
+        const air = Math.round(plan.air), ground = SPAN - air;
+        stat.innerHTML = `<b>${air}</b><span>min flying<br>${ground} min ${g.swap ? 'landing and swapping' : 'charging on the pad'}</span>`;
+        row.setAttribute('aria-label', `${g.name}: ${air} minutes flying and ${ground} minutes ${g.swap ? 'landing and swapping batteries' : 'charging'} in one hour of ${T} minute flights.`);
+      }
+      rowsEl.appendChild(row);
     }
   }
-  slider.addEventListener('input', updateDuty);
-  drawDuty();
+  const axis = $('#haxis');
+  for (const m of [0, 10, 20, 30, 40, 50, 60]) {
+    const sp = document.createElement('span');
+    sp.style.left = `${(m / SPAN) * 100}%`;
+    sp.textContent = m === 60 ? '60 min' : String(m);
+    axis.appendChild(sp);
+  }
+  slider.addEventListener('input', drawHour);
+  drawHour();
   const c3 = cycle(GEN.d3, 20), c4 = cycle(GEN.d4, 20);
   const notes = [
     ['Turnaround.', `A 27 min recharge becomes a 25 s swap. With 20 min flights the model puts the aircraft in the air ${Math.round(c4.perHour)} of every 60 minutes, against ${Math.round(c3.perHour)} with Dock 3.`],

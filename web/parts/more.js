@@ -60,49 +60,87 @@
     scenEl.appendChild(a);
   }
 
-  // ==================================================================== 02 generations chart
-  const chart = $('#dutyChart'), out = $('#dutyOut'), slider = $('#flightLen');
-  const CW = 420, CH = 250, L = 36, R = 12, Tp = 26, B = 32, X0 = 5, X1 = 44;
-  const xs = (T) => L + (T - X0) / (X1 - X0) * (CW - L - R), ys = (v) => Tp + (1 - v / 60) * (CH - Tp - B);
-  let marker;
-  function drawDuty() {
-    chart.textContent = '';
-    for (const v of [0, 15, 30, 45, 60]) {
-      svgEl('line', { x1: L, x2: CW - R, y1: ys(v), y2: ys(v), stroke: 'var(--rule)', 'stroke-width': 1 }, chart);
-      svgEl('text', { x: L - 6, y: ys(v) + 3.5, 'text-anchor': 'end' }, chart).textContent = v;
+  // ==================================================================== 02 one hour at the dock
+  // Back-to-back flights of T minutes. Each strip is a 60-minute window of that long day, placed so that its flying
+  // time equals the day's average (cycle().perHour), so the numbers match section 01 and the notes below.
+  const slider = $('#flightLen'), rowsEl = $('#hrows');
+  const TOP = { d2: 90, d3: 95, d4: 95 };          // charge at take-off: top of each dock's charge window
+  const SPAN = 60;
+  function hourPlan(key, g, T) {
+    const c = cycle(g, T);
+    if (!c) return null;
+    const C = T + c.ground, top = TOP[key];
+    const airIn = (phi) => {
+      let a = 0;
+      for (let k = Math.floor(phi / C); k * C < phi + SPAN; k++) a += Math.max(0, Math.min(k * C + T, phi + SPAN) - Math.max(k * C, phi));
+      return a;
+    };
+    let phi0 = 0, best = Infinity;
+    for (let i = 0; i < 600; i++) { const phi = (C * i) / 600, d = Math.abs(airIn(phi) - c.perHour); if (d < best - 1e-9) { best = d; phi0 = phi; } }
+    const segs = [], pts = [];
+    for (let k = Math.floor(phi0 / C); k * C < phi0 + SPAN; k++) {
+      const s0 = k * C - phi0, s1 = s0 + T, s2 = s0 + C, low = top - c.E;
+      segs.push({ kind: 'fly', a: s0, b: s1, n: g.swap ? (k % 4) + 1 : 1 }, { kind: g.swap ? 'swp' : 'chg', a: s1, b: s2 });
+      pts.push({ x: s0, y: top }, { x: s1, y: low });
+      if (g.swap) { const m = s1 + c.ground / 2; pts.push({ x: m, y: low }, { x: m, y: top }); }
+      else pts.push({ x: s1 + OVER, y: low });
+      pts.push({ x: s2, y: top });
     }
-    for (const T of [5, 10, 20, 30, 40]) svgEl('text', { x: xs(T), y: CH - B + 16, 'text-anchor': 'middle' }, chart).textContent = T;
-    svgEl('text', { x: CW - R, y: CH - 4, 'text-anchor': 'end' }, chart).textContent = 'flight length, min';
-    svgEl('text', { x: L - 6, y: 12, 'text-anchor': 'start' }, chart).textContent = 'min airborne per hour';
-    for (const g of Object.values(GEN)) {
-      let d = '';
-      for (let T = X0; T <= X1; T += 0.25) { const c = cycle(g, T); if (!c) break; d += `${d ? 'L' : 'M'}${xs(T).toFixed(1)} ${ys(c.perHour).toFixed(1)}`; }
-      svgEl('path', { d, fill: 'none', stroke: `var(${g.color})`, 'stroke-width': g.swap ? 3 : 2, 'stroke-linejoin': 'round' }, chart);
-      const end = Math.min(X1, g.window * g.hover / 100);
-      const c = cycle(g, end);
-      if (c && end < X1) svgEl('circle', { cx: xs(end), cy: ys(c.perHour), r: 3, fill: `var(${g.color})` }, chart);
-    }
-    marker = svgEl('g', {}, chart);
-    updateDuty();
+    const at = (x) => { for (let i = 0; i < pts.length - 1; i++) { const p = pts[i], q = pts[i + 1]; if (x >= p.x && x <= q.x && q.x > p.x) return p.y + ((q.y - p.y) * (x - p.x)) / (q.x - p.x); } return top; };
+    const line = [{ x: 0, y: at(0) }, ...pts.filter((p) => p.x > 0 && p.x < SPAN), { x: SPAN, y: at(SPAN) }];
+    const clipped = segs.map((q) => ({ ...q, a: Math.max(0, q.a), b: Math.min(SPAN, q.b) })).filter((q) => q.b - q.a > 1e-6);
+    return { c, segs: clipped, line, air: airIn(phi0) };
   }
-  function updateDuty() {
+  function drawHour() {
     const T = parseInt(slider.value, 10);
     $('#flightOut').textContent = `${T} min`;
-    marker.textContent = '';
-    svgEl('line', { x1: xs(T), x2: xs(T), y1: Tp, y2: CH - B, stroke: 'var(--ink-3)', 'stroke-dasharray': '3 3' }, marker);
-    out.textContent = '';
-    for (const g of Object.values(GEN)) {
-      const c = cycle(g, T);
-      if (c) svgEl('circle', { cx: xs(T), cy: ys(c.perHour), r: 4.5, fill: 'var(--panel)', stroke: `var(${g.color})`, 'stroke-width': 2.5 }, marker);
-      const d = document.createElement('div');
-      d.innerHTML = `<span class="k"><i style="background:var(${g.color})"></i>${g.name}</span><span class="v"></span><span class="s"></span>`;
-      d.querySelector('.v').innerHTML = c ? `${Math.round(c.perHour)} <small>min/h</small>` : '<small>over one charge</small>';
-      d.querySelector('.s').textContent = c ? `${c.ground < 1 ? Math.round(c.ground * 60) + ' s' : fmt1(c.ground) + ' min'} on the ground · ${c.per8} flights in 8 h` : `max ${Math.floor(g.window * g.hover / 100)} min within ${g.window} % of charge`;
-      out.appendChild(d);
+    rowsEl.textContent = '';
+    for (const [key, g] of Object.entries(GEN)) {
+      const plan = hourPlan(key, g, T);
+      const row = document.createElement('div');
+      row.className = 'hrow' + (g.swap ? ' is4' : '');
+      row.innerHTML = '<div class="hname"><b></b><small></small></div><div class="hviz"><div class="htrack"></div></div><div class="hstat"></div>';
+      row.querySelector('b').textContent = g.name;
+      row.querySelector('small').textContent = `${g.ac} · ${g.swap ? '4 batteries' : '1 battery'}`;
+      const track = row.querySelector('.htrack'), stat = row.querySelector('.hstat');
+      if (!plan) {
+        const max = Math.floor((g.window * g.hover) / 100);
+        track.classList.add('none');
+        track.textContent = `A ${T} min flight needs more than the ${g.window} % this dock charges between flights. Longest flight: ${max} min.`;
+        stat.innerHTML = '<b>–</b><span>not possible<br>at this length</span>';
+        row.setAttribute('aria-label', `${g.name}: a ${T} minute flight is not possible; longest ${max} minutes.`);
+      } else {
+        for (const q of plan.segs) {
+          const w = q.b - q.a, frac = w / SPAN, el = document.createElement('div');
+          el.className = `hseg ${q.kind}`;
+          el.style.left = `${(q.a / SPAN) * 100}%`; el.style.width = `${frac * 100}%`;
+          let label = '';
+          if (q.kind === 'fly') label = frac > 0.24 ? `flying · battery ${q.n}` : frac > 0.08 ? `B${q.n}` : '';
+          else if (q.kind === 'chg') label = frac > 0.26 ? `charging ${Math.round(w)} min` : frac > 0.09 ? `${Math.round(w)} min` : '';
+          if (label) { const sp = document.createElement('span'); sp.textContent = label; el.appendChild(sp); }
+          track.appendChild(el);
+        }
+        const bat = svgEl('svg', { class: 'hbat', viewBox: '0 0 600 100', preserveAspectRatio: 'none', 'aria-hidden': 'true' });
+        const d = plan.line.map((p, i) => `${i ? 'L' : 'M'}${(p.x * 10).toFixed(2)} ${(100 - p.y).toFixed(2)}`).join('');
+        svgEl('path', { d: `${d}L600 100L0 100Z`, class: 'fill' }, bat);
+        svgEl('path', { d, class: 'line', 'vector-effect': 'non-scaling-stroke' }, bat);
+        row.querySelector('.hviz').appendChild(bat);
+        const air = Math.round(plan.air), ground = SPAN - air;
+        stat.innerHTML = `<b>${air}</b><span>min flying<br>${ground} min ${g.swap ? 'landing and swapping' : 'charging on the pad'}</span>`;
+        row.setAttribute('aria-label', `${g.name}: ${air} minutes flying and ${ground} minutes ${g.swap ? 'landing and swapping batteries' : 'charging'} in one hour of ${T} minute flights.`);
+      }
+      rowsEl.appendChild(row);
     }
   }
-  slider.addEventListener('input', updateDuty);
-  drawDuty();
+  const axis = $('#haxis');
+  for (const m of [0, 10, 20, 30, 40, 50, 60]) {
+    const sp = document.createElement('span');
+    sp.style.left = `${(m / SPAN) * 100}%`;
+    sp.textContent = m === 60 ? '60 min' : String(m);
+    axis.appendChild(sp);
+  }
+  slider.addEventListener('input', drawHour);
+  drawHour();
   const c3 = cycle(GEN.d3, 20), c4 = cycle(GEN.d4, 20);
   const notes = [
     ['Turnaround.', `A 27 min recharge becomes a 25 s swap. With 20 min flights the model puts the aircraft in the air ${Math.round(c4.perHour)} of every 60 minutes, against ${Math.round(c3.perHour)} with Dock 3.`],

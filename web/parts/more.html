@@ -12,11 +12,30 @@
     <header class="band-head">
       <span class="kicker">02 · Generations</span>
       <h2 id="genTitle">Dock 2, Dock 3 and Dock 4 compared</h2>
-      <p>Figures from DJI's spec sheets for each dock and its aircraft. The change that matters most between flights is the last row of the dock block: Dock 2 and Dock 3 recharge the battery inside the aircraft, while Dock 4 replaces it.</p>
+      <p>Figures from DJI's spec sheets for each dock and its aircraft. The biggest change is what happens between flights: Dock 2 and Dock 3 recharge their one battery inside the aircraft, while Dock 4 replaces it with a charged one. The hour view below shows what that does to flying time.</p>
     </header>
-    <div class="gen-grid">
-      <div>
-        <div class="tablebox">
+    <div class="hour" id="hour">
+      <div class="hour-head">
+        <h3>One hour at the dock<small>Recharge the battery in the aircraft, or swap it for a charged one</small></h3>
+        <div class="ctlrow"><label for="flightLen">Each flight lasts</label><output id="flightOut" for="flightLen">20 min</output>
+          <input type="range" id="flightLen" min="5" max="44" step="1" value="20"></div>
+      </div>
+      <ul class="hour-key" aria-label="Legend">
+        <li><i class="k-fly"></i>Flying</li>
+        <li><i class="k-chg"></i>On the pad: battery charging in the aircraft</li>
+        <li><i class="k-swp"></i>On the pad: battery swap, landing to take-off under 45 s</li>
+        <li><i class="k-bat"></i>Lower strip: charge of the battery in the aircraft, 0 to 100 %</li>
+      </ul>
+      <div class="hrows" id="hrows"></div>
+      <div class="haxis" aria-hidden="true"><span></span><div id="haxis"></div><span></span></div>
+      <ol class="hsteps">
+        <li><b>Dock 2 and Dock 3 have one battery.</b> It stays in the aircraft. After every flight the aircraft waits on the pad while the dock recharges it: 27 min from 15 to 95 % on Dock 3, 32 min from 20 to 90 % on Dock 2.</li>
+        <li><b>Dock 4 has four batteries.</b> One is in the aircraft and three wait in compartments. After landing, the dock pulls the used battery out of the tail and pushes a charged one in. The swap takes under 25 s; landing to take-off, under 45 s.</li>
+        <li><b>The used battery charges while the aircraft flies.</b> Two charging channels each take a battery from 15 to 95 % in 27 min. In this model a charged battery is ready at every landing, at every flight length on the slider.</li>
+      </ol>
+      <p class="note">How the strips are worked out: a flight drains the battery at the hover rate (100 % divided by the maximum hover time, per minute). Dock 2 and Dock 3 put that charge back at DJI's published charging speed, plus 20 s for landing and closing the cover. Dock 4 spends 45 s on the pad per landing. Each strip is one hour from a long day of back-to-back flights, picked so that its flying time equals the day's average. Wind, cold and payload shorten real flights.</p>
+    </div>
+    <div class="tablebox" style="margin-top:28px">
           <table class="gens">
             <thead><tr><th scope="col"><span hidden>Item</span></th>
               <th scope="col">Dock 2<small>Matrice 3D / 3TD</small></th>
@@ -45,16 +64,6 @@
           </table>
         </div>
         <p class="srcs">¹ Includes the 145 mm wind speed gauge and the mounting brackets (58 mm on Dock 3, 69 mm on Dock 4); Dock 3 also includes its 160 mm RTK module. On Dock 4 the RTK base station is in the separate O4 Ground Station. — means not given in the spec data used.</p>
-      </div>
-      <div class="calc">
-        <h3>Airborne minutes per hour <small>by flight length</small></h3>
-        <div class="ctlrow"><label for="flightLen">Length of each flight</label><output id="flightOut" for="flightLen">20 min</output>
-          <input type="range" id="flightLen" min="5" max="44" step="1" value="20"></div>
-        <svg id="dutyChart" viewBox="0 0 420 250" role="img" aria-label="Airborne minutes per hour against flight length for Dock 2, Dock 3 and Dock 4"></svg>
-        <div class="readout3" id="dutyOut"></div>
-        <p class="note" style="margin:0">Model: battery use at the hover rate (100 % ÷ max hover time per minute) inside each dock's charge window. Dock 2 and Dock 3 recharge the used energy at DJI's published rate, plus 20 s for landing and the cover. Dock 4 spends 45 s on the ground; its two channels recharge a used battery before it is needed again, at every flight length shown. Wind, cold and payload shorten real flights.</p>
-      </div>
-    </div>
     <div class="gen-notes" id="genNotes"></div>
   </section>
 
