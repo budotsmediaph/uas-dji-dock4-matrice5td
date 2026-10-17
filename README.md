@@ -85,7 +85,7 @@ DJI publishes the order (launch film, KOSECO and Drone DR1 footage) and the 25 s
 
 ## Compilation video
 
-`video/compilation/` builds the 61 s, 1920 × 1080 compilation shown on https://budotsmedia.com/uas/#video: title, DJI's launch-film X-ray CG of the swap (credited; DJI's clip is not in the repo), our rear X-ray at 2× with three step captions, five chapters of the case study recorded frame by frame at 30 fps (`rec_case_study.mjs` replaces `requestAnimationFrame` and `performance.now` with a virtual clock, so the RTK waves and the easing play at real speed), the Dock 2/3/4 airborne-minutes card and an end card. Text is JetBrains Mono, rendered to PNG in headless Chrome (`make_cards.mjs`); `build_compilation.py` encodes each part and joins them with 0.4 s cross-fades. See `video/compilation/README.md`.
+`video/compilation/` builds the 61 s, 1920 × 1080 compilation shown on https://budotsmedia.com/uas/#video: title, DJI's launch-film X-ray CG of the swap (credited; DJI's clip is not in the repo), our rear X-ray at 2× with three step captions, five chapters of the case study recorded frame by frame at 30 fps (`rec_case_study.mjs` replaces `requestAnimationFrame` and `performance.now` with a virtual clock, so the RTK waves and the easing play at real speed), the Dock 2/3/4 airborne-minutes card and an end card. Text is JetBrains Mono, rendered to PNG in headless Chrome (`make_cards.mjs`); `build_compilation.py` encodes each part and joins them with 0.4 s cross-fades. See `video/compilation/README.md`. Posted on YouTube: https://youtu.be/-OMzsNUIZkA
 
 ## Publishing
 
